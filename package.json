@@ -1,0 +1,21 @@
+{
+  "name": "discord-game-server",
+  "version": "1.0.0",
+  "description": "A Discord bot for game server competitions and rewards.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node-dev src/index.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.25.1",
+    "dotenv": "^16.6.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^6.0.2"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/node": "^25.5.0"
+  }
+}
