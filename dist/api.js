@@ -6,10 +6,66 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.startApiServer = startApiServer;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const dotenv_1 = __importDefault(require("dotenv"));
 const db_1 = require("./db");
+const audit_log_1 = require("./audit-log");
+dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN ?? '';
+const API_ADMIN_ID = process.env.API_ADMIN_ID ?? 'dashboard-admin';
+const ALLOWED_GAMES = new Set(['coinflip', 'dice', 'roulette', 'crash', 'blackjack', 'slots', 'plinko', 'mines']);
+const ALLOWED_AFFILIATE_STATUSES = new Set(['pending', 'active', 'removed']);
+const apiLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many API requests. Please retry shortly.' },
+});
+const sensitiveLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests to sensitive endpoint. Please retry shortly.' },
+});
+function getProvidedToken(req) {
+    const authHeader = req.header('authorization') ?? '';
+    if (authHeader.toLowerCase().startsWith('bearer ')) {
+        return authHeader.slice(7).trim();
+    }
+    return req.header('x-api-key')?.trim() ?? '';
+}
+function authenticateApi(req, res, next) {
+    if (!API_AUTH_TOKEN) {
+        res.status(503).json({ error: 'API authentication is not configured on server.' });
+        return;
+    }
+    const token = getProvidedToken(req);
+    if (!token || token !== API_AUTH_TOKEN) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    next();
+}
+async function auditApiAccess(action, req) {
+    try {
+        const actor = req.header('x-admin-user')?.trim() || API_ADMIN_ID;
+        await (0, audit_log_1.logOperation)({
+            userId: actor,
+            serverId: 'api',
+            action,
+            details: `${req.method} ${req.path}`,
+        });
+    }
+    catch {
+        // Best-effort logging: do not fail requests on audit write issues.
+    }
+}
+app.use('/api', apiLimiter, authenticateApi);
 function getLimit(input, fallback, max) {
     const parsed = Number(input);
     if (!Number.isFinite(parsed))
@@ -23,6 +79,7 @@ function getLimit(input, fallback, max) {
 // --- Leaderboard ---
 app.get('/api/leaderboard', async (req, res) => {
     try {
+        await auditApiAccess('api_view_leaderboard', req);
         const limit = getLimit(req.query.limit, 50, 500);
         const db = await (0, db_1.getDbConnection)();
         const [rows] = await db.execute('SELECT user, score FROM leaderboard ORDER BY score DESC LIMIT ?', [limit]);
@@ -36,8 +93,13 @@ app.get('/api/leaderboard', async (req, res) => {
 // --- Game results ---
 app.get('/api/game-results', async (req, res) => {
     try {
+        await auditApiAccess('api_view_game_results', req);
         const limit = getLimit(req.query.limit, 100, 500);
         const gameFilter = typeof req.query.game === 'string' ? req.query.game.trim() : '';
+        if (gameFilter && !ALLOWED_GAMES.has(gameFilter.toLowerCase())) {
+            res.status(400).json({ error: 'Invalid game filter.' });
+            return;
+        }
         const db = await (0, db_1.getDbConnection)();
         const [rows] = gameFilter
             ? await db.execute('SELECT id, user, game, result, score, created_at FROM game_results WHERE game = ? ORDER BY created_at DESC LIMIT ?', [gameFilter, limit])
@@ -52,7 +114,12 @@ app.get('/api/game-results', async (req, res) => {
 // --- Affiliates ---
 app.get('/api/affiliates', async (req, res) => {
     try {
+        await auditApiAccess('api_view_affiliates', req);
         const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+        if (status && !ALLOWED_AFFILIATE_STATUSES.has(status.toLowerCase())) {
+            res.status(400).json({ error: 'Invalid affiliate status filter.' });
+            return;
+        }
         const db = await (0, db_1.getDbConnection)();
         const [rows] = status
             ? await db.execute('SELECT user_id, status, requested_at, approved_at, approved_by FROM affiliates WHERE status = ? ORDER BY requested_at DESC', [status])
@@ -65,8 +132,9 @@ app.get('/api/affiliates', async (req, res) => {
     }
 });
 // --- Codes ---
-app.get('/api/codes', async (req, res) => {
+app.get('/api/codes', sensitiveLimiter, async (req, res) => {
     try {
+        await auditApiAccess('api_view_codes', req);
         const limit = getLimit(req.query.limit, 100, 500);
         const db = await (0, db_1.getDbConnection)();
         const [rows] = await db.execute('SELECT code, source, created_at FROM codes ORDER BY created_at DESC LIMIT ?', [limit]);
@@ -78,8 +146,9 @@ app.get('/api/codes', async (req, res) => {
     }
 });
 // --- Audit log ---
-app.get('/api/audit-log', async (req, res) => {
+app.get('/api/audit-log', sensitiveLimiter, async (req, res) => {
     try {
+        await auditApiAccess('api_view_audit_log', req);
         const limit = getLimit(req.query.limit, 100, 500);
         const db = await (0, db_1.getDbConnection)();
         const [rows] = await db.execute('SELECT id, user_id, server_id, action, details, created_at FROM audit_logs ORDER BY created_at DESC LIMIT ?', [limit]);
@@ -93,6 +162,7 @@ app.get('/api/audit-log', async (req, res) => {
 // --- Stats summary ---
 app.get('/api/stats', async (_req, res) => {
     try {
+        await auditApiAccess('api_view_stats', _req);
         const db = await (0, db_1.getDbConnection)();
         const [[leaderboard]] = await db.execute('SELECT COUNT(*) AS total FROM leaderboard');
         const [[games]] = await db.execute('SELECT COUNT(*) AS total FROM game_results');
@@ -113,6 +183,7 @@ app.get('/api/stats', async (_req, res) => {
 // --- Advanced analytics overview ---
 app.get('/api/overview', async (_req, res) => {
     try {
+        await auditApiAccess('api_view_overview', _req);
         const db = await (0, db_1.getDbConnection)();
         const [[players]] = (await db.execute('SELECT COUNT(*) AS total FROM leaderboard'));
         const [[games]] = (await db.execute('SELECT COUNT(*) AS total FROM game_results'));

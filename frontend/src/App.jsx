@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 const TABS = ['Dashboard', 'Leaderboard', 'Games', 'Affiliates', 'Codes', 'Audit Log']
+const API_TOKEN = import.meta.env.VITE_API_AUTH_TOKEN || ''
+const API_ADMIN_ID = import.meta.env.VITE_API_ADMIN_ID || 'dashboard-admin'
 
 function useFetchJson(url, refreshToken) {
   const [data, setData] = useState(null)
@@ -15,7 +17,11 @@ function useFetchJson(url, refreshToken) {
 
     async function run() {
       try {
-        const response = await fetch(url)
+        const headers = {
+          ...(API_TOKEN ? { 'x-api-key': API_TOKEN } : {}),
+          'x-admin-user': API_ADMIN_ID,
+        }
+        const response = await fetch(url, { headers })
         if (!response.ok) throw new Error(`Request failed (${response.status})`)
         const json = await response.json()
         if (active) setData(json)
