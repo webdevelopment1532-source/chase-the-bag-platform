@@ -1,10 +1,75 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import dotenv from 'dotenv';
 import { getDbConnection } from './db';
+import { logOperation } from './audit-log';
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN ?? '';
+const API_ADMIN_ID = process.env.API_ADMIN_ID ?? 'dashboard-admin';
+const ALLOWED_GAMES = new Set(['coinflip', 'dice', 'roulette', 'crash', 'blackjack', 'slots', 'plinko', 'mines']);
+const ALLOWED_AFFILIATE_STATUSES = new Set(['pending', 'active', 'removed']);
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many API requests. Please retry shortly.' },
+});
+
+const sensitiveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests to sensitive endpoint. Please retry shortly.' },
+});
+
+function getProvidedToken(req: express.Request) {
+  const authHeader = req.header('authorization') ?? '';
+  if (authHeader.toLowerCase().startsWith('bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  return req.header('x-api-key')?.trim() ?? '';
+}
+
+function authenticateApi(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (!API_AUTH_TOKEN) {
+    res.status(503).json({ error: 'API authentication is not configured on server.' });
+    return;
+  }
+
+  const token = getProvidedToken(req);
+  if (!token || token !== API_AUTH_TOKEN) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  next();
+}
+
+async function auditApiAccess(action: string, req: express.Request) {
+  try {
+    const actor = req.header('x-admin-user')?.trim() || API_ADMIN_ID;
+    await logOperation({
+      userId: actor,
+      serverId: 'api',
+      action,
+      details: `${req.method} ${req.path}`,
+    });
+  } catch {
+    // Best-effort logging: do not fail requests on audit write issues.
+  }
+}
+
+app.use('/api', apiLimiter, authenticateApi);
 
 function getLimit(input: unknown, fallback: number, max: number) {
   const parsed = Number(input);
@@ -17,6 +82,7 @@ function getLimit(input: unknown, fallback: number, max: number) {
 // --- Leaderboard ---
 app.get('/api/leaderboard', async (req, res) => {
   try {
+    await auditApiAccess('api_view_leaderboard', req);
     const limit = getLimit(req.query.limit, 50, 500);
     const db = await getDbConnection();
     const [rows] = await db.execute(
@@ -33,8 +99,14 @@ app.get('/api/leaderboard', async (req, res) => {
 // --- Game results ---
 app.get('/api/game-results', async (req, res) => {
   try {
+    await auditApiAccess('api_view_game_results', req);
     const limit = getLimit(req.query.limit, 100, 500);
     const gameFilter = typeof req.query.game === 'string' ? req.query.game.trim() : '';
+
+    if (gameFilter && !ALLOWED_GAMES.has(gameFilter.toLowerCase())) {
+      res.status(400).json({ error: 'Invalid game filter.' });
+      return;
+    }
 
     const db = await getDbConnection();
     const [rows] = gameFilter
@@ -56,7 +128,12 @@ app.get('/api/game-results', async (req, res) => {
 // --- Affiliates ---
 app.get('/api/affiliates', async (req, res) => {
   try {
+    await auditApiAccess('api_view_affiliates', req);
     const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+    if (status && !ALLOWED_AFFILIATE_STATUSES.has(status.toLowerCase())) {
+      res.status(400).json({ error: 'Invalid affiliate status filter.' });
+      return;
+    }
     const db = await getDbConnection();
     const [rows] = status
       ? await db.execute(
@@ -74,8 +151,9 @@ app.get('/api/affiliates', async (req, res) => {
 });
 
 // --- Codes ---
-app.get('/api/codes', async (req, res) => {
+app.get('/api/codes', sensitiveLimiter, async (req, res) => {
   try {
+    await auditApiAccess('api_view_codes', req);
     const limit = getLimit(req.query.limit, 100, 500);
     const db = await getDbConnection();
     const [rows] = await db.execute(
@@ -90,8 +168,9 @@ app.get('/api/codes', async (req, res) => {
 });
 
 // --- Audit log ---
-app.get('/api/audit-log', async (req, res) => {
+app.get('/api/audit-log', sensitiveLimiter, async (req, res) => {
   try {
+    await auditApiAccess('api_view_audit_log', req);
     const limit = getLimit(req.query.limit, 100, 500);
     const db = await getDbConnection();
     const [rows] = await db.execute(
@@ -108,6 +187,7 @@ app.get('/api/audit-log', async (req, res) => {
 // --- Stats summary ---
 app.get('/api/stats', async (_req, res) => {
   try {
+    await auditApiAccess('api_view_stats', _req);
     const db = await getDbConnection();
     const [[leaderboard]] = await db.execute('SELECT COUNT(*) AS total FROM leaderboard') as any;
     const [[games]] = await db.execute('SELECT COUNT(*) AS total FROM game_results') as any;
@@ -128,6 +208,7 @@ app.get('/api/stats', async (_req, res) => {
 // --- Advanced analytics overview ---
 app.get('/api/overview', async (_req, res) => {
   try {
+    await auditApiAccess('api_view_overview', _req);
     const db = await getDbConnection();
     const [[players]] = (await db.execute('SELECT COUNT(*) AS total FROM leaderboard')) as any;
     const [[games]] = (await db.execute('SELECT COUNT(*) AS total FROM game_results')) as any;

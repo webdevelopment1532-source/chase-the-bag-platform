@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerAffiliateCommands = registerAffiliateCommands;
 const db_1 = require("./db");
+const audit_log_1 = require("./audit-log");
 const STAKE_CODE = () => process.env.STAKE_AFFILIATE_CODE ?? 'selfmade';
 function registerAffiliateCommands(client, ownerId) {
     client.on('messageCreate', async (message) => {
@@ -21,6 +22,12 @@ function registerAffiliateCommands(client, ownerId) {
                 const db2 = await (0, db_1.getDbConnection)();
                 await db2.execute('INSERT INTO affiliates (user_id, status) VALUES (?, \'pending\') ON DUPLICATE KEY UPDATE status = \'pending\', requested_at = CURRENT_TIMESTAMP', [message.author.id]);
                 await db2.end();
+                await (0, audit_log_1.logOperation)({
+                    userId: message.author.id,
+                    serverId: message.guild?.id || 'dm',
+                    action: 'affiliate_request',
+                    details: 'Requested affiliate approval',
+                });
                 await message.reply('Your affiliate request has been submitted for review.');
                 const owner = await client.users.fetch(ownerId);
                 await owner.send(`Affiliate request from: ${message.author.tag} (${message.author.id})`);
@@ -43,6 +50,12 @@ function registerAffiliateCommands(client, ownerId) {
                 }
                 await db.execute('UPDATE affiliates SET status = \'active\', approved_at = CURRENT_TIMESTAMP, approved_by = ? WHERE user_id = ?', [ownerId, userId]);
                 await db.end();
+                await (0, audit_log_1.logOperation)({
+                    userId: message.author.id,
+                    serverId: message.guild?.id || 'dm',
+                    action: 'affiliate_approve',
+                    details: `Approved affiliate ${userId}`,
+                });
                 await message.reply(`User <@${userId}> has been approved as an affiliate.`);
                 const user = await client.users.fetch(userId);
                 await user.send(`You have been approved as a Stake affiliate! Share this link: https://stake.us/?c=${STAKE_CODE()}`);
@@ -65,6 +78,12 @@ function registerAffiliateCommands(client, ownerId) {
                 }
                 await db.execute('UPDATE affiliates SET status = \'removed\' WHERE user_id = ?', [userId]);
                 await db.end();
+                await (0, audit_log_1.logOperation)({
+                    userId: message.author.id,
+                    serverId: message.guild?.id || 'dm',
+                    action: 'affiliate_remove',
+                    details: `Removed affiliate ${userId}`,
+                });
                 await message.reply(`User <@${userId}> has been removed from affiliates.`);
             }
             catch (err) {
@@ -79,6 +98,12 @@ function registerAffiliateCommands(client, ownerId) {
                 const [rows] = await db.execute('SELECT user_id FROM affiliates WHERE status = \'active\'');
                 await db.end();
                 const list = rows;
+                await (0, audit_log_1.logOperation)({
+                    userId: message.author.id,
+                    serverId: message.guild?.id || 'dm',
+                    action: 'affiliate_list',
+                    details: `Listed active affiliates (${list.length})`,
+                });
                 if (list.length === 0) {
                     await message.reply('No affiliates yet.');
                 }
@@ -99,6 +124,12 @@ function registerAffiliateCommands(client, ownerId) {
                 await db.end();
                 if (rows.length === 0)
                     return;
+                await (0, audit_log_1.logOperation)({
+                    userId: message.author.id,
+                    serverId: message.guild?.id || 'dm',
+                    action: 'affiliate_link',
+                    details: 'Requested affiliate link',
+                });
                 await message.reply(`Your Stake affiliate link: https://stake.us/?c=${STAKE_CODE()}`);
             }
             catch (err) {

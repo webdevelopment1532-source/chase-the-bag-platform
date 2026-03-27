@@ -1,6 +1,7 @@
 // Affiliate management for Stake — DB-backed
 import { Client, Message } from 'discord.js';
 import { getDbConnection } from './db';
+import { logOperation } from './audit-log';
 
 const STAKE_CODE = () => process.env.STAKE_AFFILIATE_CODE ?? 'selfmade';
 
@@ -28,6 +29,12 @@ export function registerAffiliateCommands(client: Client, ownerId: string) {
           [message.author.id]
         );
         await db2.end();
+        await logOperation({
+          userId: message.author.id,
+          serverId: message.guild?.id || 'dm',
+          action: 'affiliate_request',
+          details: 'Requested affiliate approval',
+        });
         await message.reply('Your affiliate request has been submitted for review.');
         const owner = await client.users.fetch(ownerId);
         await owner.send(`Affiliate request from: ${message.author.tag} (${message.author.id})`);
@@ -56,6 +63,12 @@ export function registerAffiliateCommands(client: Client, ownerId: string) {
           [ownerId, userId]
         );
         await db.end();
+        await logOperation({
+          userId: message.author.id,
+          serverId: message.guild?.id || 'dm',
+          action: 'affiliate_approve',
+          details: `Approved affiliate ${userId}`,
+        });
         await message.reply(`User <@${userId}> has been approved as an affiliate.`);
         const user = await client.users.fetch(userId);
         await user.send(`You have been approved as a Stake affiliate! Share this link: https://stake.us/?c=${STAKE_CODE()}`);
@@ -84,6 +97,12 @@ export function registerAffiliateCommands(client: Client, ownerId: string) {
           [userId]
         );
         await db.end();
+        await logOperation({
+          userId: message.author.id,
+          serverId: message.guild?.id || 'dm',
+          action: 'affiliate_remove',
+          details: `Removed affiliate ${userId}`,
+        });
         await message.reply(`User <@${userId}> has been removed from affiliates.`);
       } catch (err) {
         await message.reply('Database error. Please try again later.');
@@ -100,6 +119,12 @@ export function registerAffiliateCommands(client: Client, ownerId: string) {
         );
         await db.end();
         const list = rows as any[];
+        await logOperation({
+          userId: message.author.id,
+          serverId: message.guild?.id || 'dm',
+          action: 'affiliate_list',
+          details: `Listed active affiliates (${list.length})`,
+        });
         if (list.length === 0) {
           await message.reply('No affiliates yet.');
         } else {
@@ -121,6 +146,12 @@ export function registerAffiliateCommands(client: Client, ownerId: string) {
         );
         await db.end();
         if ((rows as any[]).length === 0) return;
+        await logOperation({
+          userId: message.author.id,
+          serverId: message.guild?.id || 'dm',
+          action: 'affiliate_link',
+          details: 'Requested affiliate link',
+        });
         await message.reply(`Your Stake affiliate link: https://stake.us/?c=${STAKE_CODE()}`);
       } catch (err) {
         // silently ignore — user may not be an affiliate
