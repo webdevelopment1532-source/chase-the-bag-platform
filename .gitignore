@@ -1,6 +1,9 @@
-node_modules
-frontend/node_modules
+node_modules/
+coverage/
+dist/
+frontend/dist/
 
+# Local environment files
 .env
 .env.*
 !.env.example
