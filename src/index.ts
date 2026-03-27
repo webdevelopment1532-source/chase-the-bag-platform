@@ -1,24 +1,48 @@
-import { Client, GatewayIntentBits, Message } from 'discord.js';
+import { registerAdvancedCommands, startAutomatedAdDrops } from './advanced-commands';
+import { announceUpcomingEvents } from './events';
+import { registerAffiliateCommands } from './affiliates';
+import { startApiServer } from './api';
+import { Client, GatewayIntentBits, Partials, ChannelType, Message } from 'discord.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent
+	],
+	partials: [Partials.Channel, Partials.GuildMember, Partials.Message]
+});
 
-client.once('ready', () => {
+client.once('clientReady', () => {
 	console.log(`Logged in as ${client.user?.tag}!`);
 });
 
+// Register advanced commands (charts, stats, etc.)
+registerAdvancedCommands(client);
+// Replace 'YOUR_DISCORD_USER_ID' with your actual Discord user ID for owner control
+registerAffiliateCommands(client, 'cyber44securethebag');
 
-// Channel name to restrict games to
-const GAME_CHANNEL = 'coin-exchange-payed-games';
+// Start automated Stake ad drops
+startAutomatedAdDrops(client);
+
+// Announce regular events and tournaments on startup
+client.once('clientReady', () => {
+	announceUpcomingEvents(client);
+});
+
+
+// Channel ID to restrict games to (from https://discord.com/channels/1486424942768685249/1486424943594836080)
+const GAME_CHANNEL_ID = '1486424943594836080';
 
 client.on('messageCreate', (message: Message) => {
 	// Ignore messages from bots
 	if (message.author.bot) return;
 
-	// Restrict to the game channel
-	if (message.channel.type === 0 && (message.channel as any).name !== GAME_CHANNEL) return;
+	// Restrict to the game channel (v14+)
+	if (message.channel.id !== GAME_CHANNEL_ID) return;
 
 	const content = message.content.trim().toLowerCase();
 
@@ -51,4 +75,5 @@ client.on('messageCreate', (message: Message) => {
 	}
 });
 
+startApiServer(3001);
 client.login(process.env.DISCORD_TOKEN);
