@@ -1,0 +1,8 @@
+{
+  "git.enableStatusBarSync": true,
+  "git.showActionButton": {
+    "publish": true,
+    "sync": true,
+    "commit": false
+  }
+}
