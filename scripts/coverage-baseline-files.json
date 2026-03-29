@@ -1,0 +1,131 @@
+{
+  "updatedAt": "2026-03-27",
+  "files": {
+    "src/advanced-commands.ts": {
+      "statement": 25.67,
+      "branch": 16.52,
+      "function": 21.05,
+      "line": 25.35
+    },
+    "src/affiliates.ts": {
+      "statement": 96.29,
+      "branch": 83.72,
+      "function": 100,
+      "line": 96.1
+    },
+    "src/analytics.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/antifraud.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/api.ts": {
+      "statement": 97.19,
+      "branch": 84.41,
+      "function": 92.3,
+      "line": 97.68
+    },
+    "src/audit-log.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/chart.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/crawler-service.ts": {
+      "statement": 94.2,
+      "branch": 84.61,
+      "function": 83.33,
+      "line": 94.2
+    },
+    "src/db.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/events.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/exchange-integration.ts": {
+      "statement": 11.64,
+      "branch": 0,
+      "function": 0,
+      "line": 12.31
+    },
+    "src/export-data.ts": {
+      "statement": 28.57,
+      "branch": 0,
+      "function": 0,
+      "line": 28.57
+    },
+    "src/games.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/payout-policy.ts": {
+      "statement": 91.42,
+      "branch": 81.25,
+      "function": 100,
+      "line": 90.9
+    },
+    "src/personalize.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/referral.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/scraper.ts": {
+      "statement": 100,
+      "branch": 72.72,
+      "function": 100,
+      "line": 100
+    },
+    "src/trading-tracker.ts": {
+      "statement": 11.62,
+      "branch": 0,
+      "function": 0,
+      "line": 11.9
+    },
+    "src/virtual-board.ts": {
+      "statement": 100,
+      "branch": 100,
+      "function": 100,
+      "line": 100
+    },
+    "src/routes/scrapers.ts": {
+      "statement": 76.97,
+      "branch": 65.62,
+      "function": 90.9,
+      "line": 78.1
+    },
+    "src/routes/trading.ts": {
+      "statement": 88.97,
+      "branch": 63.49,
+      "function": 100,
+      "line": 88.97
+    }
+  }
+}

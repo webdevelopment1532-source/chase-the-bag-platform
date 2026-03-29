@@ -19,5 +19,7 @@ jobs:
         run: npm install --legacy-peer-deps
       - name: Build
         run: npm run build
-      - name: Run tests
-        run: npx jest --coverage
+      - name: Run tests with coverage
+        run: npm run test:coverage
+      - name: Enforce strict 100% coverage
+        run: npm run coverage:strict

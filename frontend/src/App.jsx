@@ -1,9 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
+import TradingDashboard from './components/TradingDashboard.jsx'
 import './App.css'
 
-const TABS = ['Dashboard', 'Leaderboard', 'Games', 'Affiliates', 'Codes', 'Audit Log']
+const TABS = ['Dashboard', 'Coin Exchange', 'Leaderboard', 'Games', 'Affiliates', 'Codes', 'Audit Log']
+const TAB_PATHS = {
+  Dashboard: '/',
+  'Coin Exchange': '/exchange',
+  Leaderboard: '/leaderboard',
+  Games: '/games',
+  Affiliates: '/affiliates',
+  Codes: '/codes',
+  'Audit Log': '/audit-log',
+}
 const API_TOKEN = import.meta.env.VITE_API_AUTH_TOKEN || ''
 const API_ADMIN_ID = import.meta.env.VITE_API_ADMIN_ID || 'dashboard-admin'
+
+function getTabForPath(pathname) {
+  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/$/, '')
+  const match = Object.entries(TAB_PATHS).find(([, path]) => path === normalizedPath)
+  return match?.[0] || 'Dashboard'
+}
 
 function useFetchJson(url, refreshToken) {
   const [data, setData] = useState(null)
@@ -42,20 +58,16 @@ function useFetchJson(url, refreshToken) {
 }
 
 function useAutoRefresh(intervalSeconds, manualBump) {
-  const [tick, setTick] = useState(0)
+  const [intervalTick, setIntervalTick] = useState(0)
   useEffect(() => {
     if (!intervalSeconds) return undefined
     const interval = setInterval(() => {
-      setTick((prev) => prev + 1)
+      setIntervalTick((prev) => prev + 1)
     }, intervalSeconds * 1000)
     return () => clearInterval(interval)
   }, [intervalSeconds])
 
-  useEffect(() => {
-    setTick((prev) => prev + 1)
-  }, [manualBump])
-
-  return tick
+  return intervalTick + manualBump
 }
 
 function Badge({ value }) {
@@ -169,6 +181,7 @@ function Bars({ title, rows, labelKey, valueKey }) {
 
 function DashboardView({ refreshToken }) {
   const overview = useFetchJson('/api/overview', refreshToken)
+  const crawler = useFetchJson('/api/crawler-status', refreshToken)
 
   return (
     <section className="view-stack">
@@ -188,6 +201,30 @@ function DashboardView({ refreshToken }) {
           <Bars title="Result Mix" rows={overview.data?.resultMix ?? []} labelKey="result" valueKey="total" />
         </div>
       )}
+
+      <section className="panel">
+        <header className="panel-head">
+          <h2>Crawler Operations</h2>
+          <p className="muted">Live status for Chase The Bag crawler</p>
+        </header>
+        <div className="stats-grid crawler-grid">
+          <StatCard label="Active" value={crawler.data?.active ? 'Yes' : 'No'} hint="Service registered" />
+          <StatCard label="Running" value={crawler.data?.running ? 'Yes' : 'No'} hint="Currently processing" />
+          <StatCard label="Total Runs" value={crawler.data?.totalRuns} hint="Lifetime cycles" />
+          <StatCard label="Codes Found" value={crawler.data?.totalCodesFound} hint="Lifetime discoveries" />
+          <StatCard label="Consecutive Failures" value={crawler.data?.consecutiveFailures} hint="Current failure streak" />
+          <StatCard
+            label="Last Success"
+            value={crawler.data?.lastSuccessAt ? new Date(crawler.data.lastSuccessAt).toLocaleString() : '-'}
+            hint="Most recent successful cycle"
+          />
+        </div>
+        {crawler.loading && <p className="state">Loading crawler status...</p>}
+        {crawler.error && <p className="state state-error">{crawler.error}</p>}
+        {!crawler.loading && !crawler.error && crawler.data?.lastError && (
+          <p className="state state-error">Last crawler error: {crawler.data.lastError}</p>
+        )}
+      </section>
 
       <section className="panel">
         <header className="panel-head">
@@ -329,7 +366,7 @@ function AuditView({ refreshToken, search }) {
 }
 
 function App() {
-  const [tab, setTab] = useState('Dashboard')
+  const [tab, setTab] = useState(() => getTabForPath(window.location.pathname))
   const [search, setSearch] = useState('')
   const [autoRefresh, setAutoRefresh] = useState(0)
   const [manualRefresh, setManualRefresh] = useState(0)
@@ -338,8 +375,26 @@ function App() {
 
   const refreshToken = useAutoRefresh(autoRefresh, manualRefresh)
 
+  useEffect(() => {
+    function handlePopState() {
+      setTab(getTabForPath(window.location.pathname))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  function handleTabChange(nextTab) {
+    setTab(nextTab)
+    const nextPath = TAB_PATHS[nextTab] || '/'
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath)
+    }
+  }
+
   const views = {
     Dashboard: <DashboardView refreshToken={refreshToken} />,
+    'Coin Exchange': <TradingDashboard userId={API_ADMIN_ID} apiToken={API_TOKEN} />,
     Leaderboard: <LeaderboardView refreshToken={refreshToken} search={search} />,
     Games: <GamesView refreshToken={refreshToken} search={search} gameFilter={gameFilter} />,
     Affiliates: <AffiliatesView refreshToken={refreshToken} search={search} statusFilter={statusFilter} />,
@@ -400,7 +455,7 @@ function App() {
           <button
             key={item}
             type="button"
-            onClick={() => setTab(item)}
+            onClick={() => handleTabChange(item)}
             className={item === tab ? 'tab active' : 'tab'}
           >
             {item}

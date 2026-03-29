@@ -2,11 +2,10 @@
 const userTimestamps: Record<string, number> = {};
 const RATE_LIMIT_MS = 5000; // 5 seconds per user
 
-// List of admin user IDs (replace with real Discord user IDs)
-const ADMIN_USERS: string[] = [
-  // Add your Discord user ID here for full admin access
-  // Example: 'YOUR_DISCORD_USER_ID',
-];
+const ADMIN_USERS: string[] = (process.env.CTB_ADMIN_USER_IDS ?? '')
+  .split(',')
+  .map((id) => id.trim())
+  .filter(Boolean);
 
 // Only allow this Stake affiliate code
 const APPROVED_AFFILIATE_CODE = process.env.STAKE_AFFILIATE_CODE ?? 'selfmade';
@@ -21,9 +20,16 @@ import { getPlatformAnalytics } from './analytics';
 import { getReferralLeaderboard, getUserReferralCount } from './referral';
 import { checkFraudulentActivity } from './antifraud';
 import { getPersonalizedOffer } from './personalize';
+import {
+  assertAuthorizedScraper,
+  assertPayoutEligible,
+  calculateStakeDropRouting,
+  type ParticipationContext,
+} from './payout-policy';
 
 // --- Automated Stake Ad Drops ---
 import { setInterval } from 'timers';
+import { clearInterval } from 'timers';
 const AD_CHANNEL_NAME = 'stake-ads';
 const STAKE_AD_MESSAGES = [
 `🔥 Join Stake with code **${APPROVED_AFFILIATE_CODE}** for exclusive rewards! https://stake.us/?c=${APPROVED_AFFILIATE_CODE}`,
@@ -31,11 +37,12 @@ const STAKE_AD_MESSAGES = [
   `🎲 Play, win, and earn more with Stake code **${APPROVED_AFFILIATE_CODE}**!`
 ];
 let adDropInitialized = false;
+let adDropInterval: NodeJS.Timeout | null = null;
 
 export function startAutomatedAdDrops(client: Client) {
   if (adDropInitialized) return;
   adDropInitialized = true;
-  setInterval(async () => {
+  adDropInterval = setInterval(async () => {
     const guilds = client.guilds.cache;
     for (const [, guild] of guilds) {
       const channel = guild.channels.cache.find(
@@ -47,6 +54,14 @@ export function startAutomatedAdDrops(client: Client) {
       }
     }
   }, 1000 * 60 * 60); // Every hour
+}
+
+export function stopAutomatedAdDrops() {
+  if (adDropInterval) {
+    clearInterval(adDropInterval);
+    adDropInterval = null;
+  }
+  adDropInitialized = false;
 }
 
 // --- Advanced Rewards System ---
@@ -112,6 +127,22 @@ Enjoy the games, rewards, and exclusive features!`
   client.on('messageCreate', async (message: Message) => {
     if (message.author.bot) return;
 
+    const gameRoleIds = (process.env.CTB_GAME_ROLE_IDS ?? '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+    const hasGameRole = gameRoleIds.length
+      ? Boolean(message.member?.roles && gameRoleIds.some((roleId) => (message.member?.roles as any).cache?.has(roleId)))
+      : false;
+    const isInLive = Boolean((message.member as any)?.voice?.channelId);
+    const participantContext: ParticipationContext = {
+      userId: message.author.id,
+      isAdmin: ADMIN_USERS.includes(message.author.id),
+      isOwner: message.author.id === (process.env.CTB_OWNER_USER_ID ?? ''),
+      isInGame: hasGameRole,
+      isInLive,
+    };
+
     try {
 
     // Anti-fraud: check for suspicious activity
@@ -125,11 +156,58 @@ Enjoy the games, rewards, and exclusive features!`
     // !mylink command: DM the approved Stake invite code
     if (message.content === '!mylink') {
       try {
+        assertPayoutEligible(participantContext);
+      } catch (err: any) {
+        await message.reply(err.message);
+        return;
+      }
+      try {
         await message.author.send(`Welcome to Stake! Use promo code **${APPROVED_AFFILIATE_CODE}** when you join: https://stake.us/?c=${APPROVED_AFFILIATE_CODE}`);
         await message.reply('I have sent you a DM with the official Stake invite code!');
         await logOperation({ userId: message.author.id, serverId: message.guild?.id || 'dm', action: 'send_affiliate_link', details: 'Sent Stake affiliate link' });
       } catch {
         await message.reply('Could not DM you. Please check your privacy settings.');
+      }
+      return;
+    }
+
+    // !scrapecodes (restricted): manual scrape trigger for approved operators only
+    if (message.content === '!scrapecodes') {
+      try {
+        assertAuthorizedScraper(participantContext);
+        const codes = await scrapeStakeCodes({ actor: participantContext });
+        if (!codes.length) {
+          await message.reply('No new Stake bonus codes found in this scrape cycle.');
+        } else {
+          await message.reply(`Scrape completed. Found **${codes.length}** code(s).`);
+        }
+      } catch (err: any) {
+        await message.reply(err.message || 'Scrape denied.');
+      }
+      return;
+    }
+
+    // !stakepayoutsplit <dropAmount> [exchangeFee]
+    if (message.content.startsWith('!stakepayoutsplit')) {
+      if (!participantContext.isAdmin && !participantContext.isOwner) {
+        await message.reply('❌ You do not have permission to view payout routing.');
+        return;
+      }
+      const parts = message.content.split(/\s+/).filter(Boolean);
+      const dropAmount = Number(parts[1]);
+      const exchangeFee = Number(parts[2] ?? 0);
+      try {
+        const routing = calculateStakeDropRouting(dropAmount, exchangeFee);
+        await message.reply(
+          `💼 **Stake Drop Routing**\n` +
+            `Total drop: **${routing.totalDrop}**\n` +
+            `Main wallet (${routing.splitPercentToMain}%): **${routing.toMainWallet}**\n` +
+            `Exchange wallet: **${routing.toExchangeWallet}** (includes fee ${routing.exchangeFeeAdded})\n` +
+            `Main address: ${routing.mainWalletAddress}\n` +
+            `Exchange address: ${routing.exchangeWalletAddress}`,
+        );
+      } catch (err: any) {
+        await message.reply(err.message || 'Invalid payout split parameters.');
       }
       return;
     }
@@ -266,6 +344,12 @@ Enjoy the games, rewards, and exclusive features!`
     }
     // !mycode command
     if (message.content === '!mycode') {
+      try {
+        assertPayoutEligible(participantContext);
+      } catch (err: any) {
+        await message.reply(err.message);
+        return;
+      }
       const code = generateSelfCode('CYBER44', 8);
       const db = await getDbConnection();
       await db.execute('INSERT IGNORE INTO codes (code, source) VALUES (?, ?)', [code, 'selfmade']);

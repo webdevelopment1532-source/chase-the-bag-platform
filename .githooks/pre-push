@@ -13,4 +13,18 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   esac
 done
 
+if [ "$SKIP_COVERAGE_CHECK" = "1" ]; then
+  echo "Skipping coverage check because SKIP_COVERAGE_CHECK=1"
+  exit 0
+fi
+
+echo "Running coverage ratchet check before push..."
+npm run coverage:strict
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "Push blocked: strict 100% coverage check failed."
+  echo "Run 'npm run test:coverage' and cover all uncovered code paths before pushing."
+  exit "$status"
+fi
+
 exit 0

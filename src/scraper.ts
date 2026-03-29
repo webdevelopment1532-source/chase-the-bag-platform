@@ -1,10 +1,28 @@
 // Scraper for Stake.us codes and selfmade code generator
 import fetch from 'node-fetch';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import { getDbConnection } from './db';
 import { logOperation } from './audit-log';
+import { assertAuthorizedScraper, type ParticipationContext } from './payout-policy';
 
-export async function scrapeStakeCodes() {
+interface ScrapeOptions {
+  actor?: ParticipationContext;
+  enforceAccess?: boolean;
+}
+
+export async function scrapeStakeCodes(options: ScrapeOptions = {}) {
+  const enforceAccess = options.enforceAccess ?? true;
+  const actor: ParticipationContext =
+    options.actor ??
+    {
+      userId: 'system',
+      isOwner: process.env.CTB_ALLOW_SYSTEM_SCRAPER === 'true',
+    };
+
+  if (enforceAccess) {
+    assertAuthorizedScraper(actor);
+  }
+
   const res = await fetch('https://stake.us/');
   const html = await res.text();
   const $ = cheerio.load(html);
@@ -18,8 +36,12 @@ export async function scrapeStakeCodes() {
     const db = await getDbConnection();
     for (const code of codes) {
       await db.execute('INSERT IGNORE INTO codes (code, source) VALUES (?, ?)', [code, 'stake.us']);
-      // Log code scrape operation (no user/server context, so use 'system')
-      await logOperation({ userId: 'system', serverId: 'system', action: 'scrape_code', details: `Scraped code: ${code}` });
+      await logOperation({
+        userId: actor.userId,
+        serverId: 'system',
+        action: 'scrape_code',
+        details: `Scraped code: ${code}`,
+      });
     }
   }
   return codes;

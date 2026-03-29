@@ -2,10 +2,94 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Start Discord Bot",
+			"label": "Start Backend Dev Server",
 			"type": "shell",
-			"command": "npm run start",
+			"command": "npm run dev",
 			"args": [],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start Frontend Dev Server",
+			"type": "shell",
+			"command": "npm run dev -- --host 0.0.0.0",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start Frontend Tunnel",
+			"type": "shell",
+			"command": "npx localtunnel --port 5173 --local-host 127.0.0.1",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start Frontend Tunnel (Auto-Restart)",
+			"type": "shell",
+			"command": "while true; do npx localtunnel --port 5173 --local-host 127.0.0.1; echo \"Tunnel disconnected. Restarting in 3s...\"; sleep 3; done",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/frontend"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start phpMyAdmin (Local)",
+			"type": "shell",
+			"command": "php -S 0.0.0.0:8081 -t tools/phpmyadmin",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start phpMyAdmin Tunnel",
+			"type": "shell",
+			"command": "npx localtunnel --port 8081 --local-host 127.0.0.1",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start phpMyAdmin Tunnel (Auto-Restart)",
+			"type": "shell",
+			"command": "while true; do npx localtunnel --port 8081 --local-host 127.0.0.1; echo \"phpMyAdmin tunnel disconnected. Restarting in 3s...\"; sleep 3; done",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Publish Current Branch to GitHub",
+			"type": "shell",
+			"command": "git push -u origin HEAD",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-schema.json",
+  "testRunner": "jest",
+  "coverageAnalysis": "off",
+  "reporters": ["clear-text", "html", "progress"],
+  "mutate": [
+    "src/routes/scrapers.ts",
+    "src/routes/trading.ts"
+  ],
+  "mutator": {
+    "excludedMutations": [
+      "BooleanLiteral",
+      "StringLiteral",
+      "ObjectLiteral",
+      "ConditionalExpression",
+      "BlockStatement",
+      "LogicalOperator",
+      "EqualityOperator",
+      "ArrayDeclaration"
+    ]
+  },
+  "jest": {
+    "projectType": "custom",
+    "configFile": "jest.config.js"
+  },
+  "thresholds": {
+    "high": 100,
+    "low": 100,
+    "break": 100
+  }
+}

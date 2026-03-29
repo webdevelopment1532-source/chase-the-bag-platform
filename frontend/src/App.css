@@ -110,6 +110,11 @@ h1 {
   gap: 12px;
 }
 
+.crawler-grid {
+  padding: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .stat-card {
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -284,6 +289,10 @@ tbody tr:hover {
   }
 
   .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .crawler-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

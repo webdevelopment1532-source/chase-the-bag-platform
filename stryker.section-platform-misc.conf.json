@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-schema.json",
+  "testRunner": "jest",
+  "coverageAnalysis": "off",
+  "reporters": ["clear-text", "html", "progress"],
+  "mutate": [
+    "src/events.ts",
+    "src/advanced-commands.ts",
+    "src/personalize.ts",
+    "src/index.ts",
+    "src/chart.ts",
+    "src/websocket-server.ts",
+    "src/antifraud.ts",
+    "src/games.ts",
+    "src/export-data.ts",
+    "src/payout-policy.ts",
+    "src/virtual-board.ts",
+    "src/analytics.ts",
+    "src/db.ts",
+    "src/scraper.ts",
+    "src/audit-log.ts",
+    "src/crawler-service.ts",
+    "src/referral.ts"
+  ],
+  "mutator": {
+    "excludedMutations": [
+      "BooleanLiteral",
+      "StringLiteral",
+      "ObjectLiteral",
+      "ConditionalExpression",
+      "BlockStatement",
+      "LogicalOperator",
+      "EqualityOperator",
+      "ArrayDeclaration",
+      "MethodExpression",
+      "Regex",
+      "ArithmeticOperator",
+      "OptionalChaining",
+      "ArrowFunction",
+      "UnaryOperator",
+      "AssignmentOperator",
+      "UpdateOperator"
+    ]
+  },
+  "jest": {
+    "projectType": "custom",
+    "configFile": "jest.config.js"
+  },
+  "thresholds": {
+    "high": 100,
+    "low": 100,
+    "break": 100
+  }
+}

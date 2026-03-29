@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    container_name: ctb-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: host.docker.internal
+      PMA_PORT: 3306
+      PMA_USER: ctb_app
+      PMA_PASSWORD: J7mQ2pL9xV4cR8tN6kD3sF1b
+      UPLOAD_LIMIT: 64M
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
