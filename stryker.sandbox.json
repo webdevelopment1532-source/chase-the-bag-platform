@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-schema.json",
+  "description": "Strict sandbox configuration for isolated mutation testing with zero state leakage",
   "testRunner": "jest",
   "coverageAnalysis": "off",
   "reporters": ["html", "clear-text", "progress"],
@@ -12,10 +13,17 @@
   "maxTestRunnerReuse": 1,
   "concurrency": 1,
   "cleanTempDir": "always",
-  "tempDirName": ".stryker-tmp",
+  "tempDirName": ".stryker-sandbox-tmp",
+  "disableTypeChecks": true,
+  "timeoutMS": 30000,
+  "timeoutFactor": 1.5,
   "thresholds": {
     "high": 100,
     "low": 100,
     "break": 100
+  },
+  "mutatorDesc": {
+    "plugins": ["javascript", "typescript"],
+    "excludedMutations": []
   }
 }
