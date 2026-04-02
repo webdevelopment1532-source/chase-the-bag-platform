@@ -1,4 +1,13 @@
-import { Client, Message, User } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  Client,
+  EmbedBuilder,
+  Message,
+  User,
+} from 'discord.js';
 import {
   acceptExchangeOffer,
   cancelExchangeOffer,
@@ -71,15 +80,141 @@ function formatHistoryMessage(transactions: Awaited<ReturnType<typeof listUserTr
   ].join('\n');
 }
 
+function buildExchangePanelEmbed(user: User) {
+  return new EmbedBuilder()
+    .setTitle('Chase The Bag Coin Exchange')
+    .setDescription(
+      [
+        'Welcome to your exchange dashboard.',
+        '',
+        'Use the controls below to check your wallet, offers, and history.',
+        'Quick actions still work with text commands.',
+      ].join('\n')
+    )
+    .addFields(
+      {
+        name: 'Quick Actions',
+        value: [
+          '`!exchange send @user amount`',
+          '`!exchange offer @user amount optional note`',
+          '`!exchange accept offerId`',
+          '`!exchange cancel offerId`',
+        ].join('\n'),
+      },
+      {
+        name: 'Panel Scope',
+        value: `Bound to <@${user.id}> for secure interaction.`,
+      }
+    )
+    .setColor(0x1f8b4c)
+    .setFooter({ text: 'Chase The Bag Exchange UI' })
+    .setTimestamp();
+}
+
+function buildExchangePanelButtons(userId: string) {
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(`exchange_wallet:${userId}`).setLabel('Wallet').setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(`exchange_offers:${userId}`).setLabel('Offers').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(`exchange_history:${userId}`).setLabel('History').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`exchange_help:${userId}`).setLabel('Commands').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`exchange_refresh:${userId}`).setLabel('Refresh').setStyle(ButtonStyle.Secondary)
+    ),
+  ];
+}
+
+async function handlePanelButton(interaction: ButtonInteraction) {
+  const [action, ownerId] = interaction.customId.split(':');
+  if (interaction.user.id !== ownerId) {
+    await interaction.reply({ content: 'This panel belongs to another user.', ephemeral: true });
+    return;
+  }
+
+  if (action === 'exchange_wallet') {
+    const wallet = await getCoinWallet(interaction.user.id);
+    await interaction.reply({ content: formatWalletMessage(interaction.user, wallet), ephemeral: true });
+    return;
+  }
+
+  if (action === 'exchange_offers') {
+    const offers = await listUserOffers(interaction.user.id);
+    await interaction.reply({ content: formatOffersMessage(interaction.user.id, offers), ephemeral: true });
+    return;
+  }
+
+  if (action === 'exchange_history') {
+    const transactions = await listUserTransactions(interaction.user.id, 8);
+    await interaction.reply({ content: formatHistoryMessage(transactions), ephemeral: true });
+    return;
+  }
+
+  if (action === 'exchange_help') {
+    await interaction.reply({
+      content: [
+        '**Coin Exchange Commands**',
+        '`!exchange` (open dashboard)',
+        '`!exchange wallet`',
+        '`!exchange send @user amount`',
+        '`!exchange offer @user amount optional note`',
+        '`!exchange offers`',
+        '`!exchange accept offerId`',
+        '`!exchange cancel offerId`',
+        '`!exchange history`',
+        '`!exchange grant @user amount` (admin only)',
+      ].join('\n'),
+      ephemeral: true,
+    });
+    return;
+  }
+
+  await interaction.reply({ content: 'Dashboard refreshed.', ephemeral: true });
+}
+
+async function sendExchangePanel(message: Message) {
+  const panel = await message.reply({
+    embeds: [buildExchangePanelEmbed(message.author)],
+    components: buildExchangePanelButtons(message.author.id),
+  });
+
+  const collector = panel.createMessageComponentCollector({ time: 10 * 60 * 1000 });
+
+  collector.on('collect', async (interaction) => {
+    try {
+      await handlePanelButton(interaction as ButtonInteraction);
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message : 'Panel action failed.';
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: `Coin exchange error: ${messageText}`, ephemeral: true });
+      }
+    }
+  });
+
+  collector.on('end', async () => {
+    try {
+      await panel.edit({ components: [] });
+    } catch {
+      // Ignore if panel message is deleted or no longer editable.
+    }
+  });
+}
+
 export function registerCoinExchangeCommands(client: Client, ownerId: string) {
   const adminIds = getAdminIds(ownerId);
-  const channelId = process.env.COIN_EXCHANGE_CHANNEL_ID ?? DEFAULT_CHANNEL_ID;
+  const channelIds = (process.env.COIN_EXCHANGE_CHANNEL_IDS ?? process.env.COIN_EXCHANGE_CHANNEL_ID ?? DEFAULT_CHANNEL_ID)
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const allowedGuildIds = (process.env.DISCORD_GUILD_IDS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
   const commandTimestamps = new Map<string, number>();
 
   client.on('messageCreate', async (message: Message) => {
     if (message.author.bot) return;
     if (!message.content.toLowerCase().startsWith('!exchange')) return;
     if (!message.guild) return;
+    if (allowedGuildIds.length && !allowedGuildIds.includes(message.guild.id)) return;
 
     const now = Date.now();
     const previous = commandTimestamps.get(message.author.id) ?? 0;
@@ -88,19 +223,21 @@ export function registerCoinExchangeCommands(client: Client, ownerId: string) {
     }
     commandTimestamps.set(message.author.id, now);
 
-    if (message.channel.id !== channelId) {
-      await message.reply(`Use coin exchange commands in <#${channelId}>.`);
+    if (!channelIds.includes(message.channel.id)) {
+      const preferredChannel = channelIds[0];
+      await message.reply(`Use coin exchange commands in <#${preferredChannel}>.`);
       return;
     }
 
     const args = getCommandArgs(message);
-    const action = args[1]?.toLowerCase() ?? 'help';
+    const action = args[1]?.toLowerCase() ?? 'panel';
 
     try {
       if (action === 'help') {
         await message.reply(
           [
             '**Coin Exchange Commands**',
+            '`!exchange` (open dashboard)',
             '`!exchange wallet`',
             '`!exchange send @user amount`',
             '`!exchange offer @user amount optional note`',
@@ -111,6 +248,11 @@ export function registerCoinExchangeCommands(client: Client, ownerId: string) {
             '`!exchange grant @user amount` (admin only)',
           ].join('\n')
         );
+        return;
+      }
+
+      if (action === 'panel' || action === 'ui' || action === 'app') {
+        await sendExchangePanel(message);
         return;
       }
 

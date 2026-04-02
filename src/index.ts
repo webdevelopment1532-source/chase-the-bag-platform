@@ -10,7 +10,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const OWNER_DISCORD_USER_ID = process.env.OWNER_DISCORD_USER_ID ?? '';
-const GAME_CHANNEL_ID = process.env.GAME_CHANNEL_ID ?? '1486424943594836080';
+const GAME_CHANNEL_IDS = (process.env.GAME_CHANNEL_IDS ?? process.env.GAME_CHANNEL_ID ?? '1486424943594836080')
+	.split(',')
+	.map((value) => value.trim())
+	.filter(Boolean);
+const ALLOWED_GUILD_IDS = (process.env.DISCORD_GUILD_IDS ?? '')
+	.split(',')
+	.map((value) => value.trim())
+	.filter(Boolean);
 const API_PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3001;
 const COMMAND_COOLDOWN_MS = process.env.COMMAND_COOLDOWN_MS ? Number(process.env.COMMAND_COOLDOWN_MS) : 1200;
 const userCommandTimestamps = new Map<string, number>();
@@ -61,9 +68,10 @@ client.on('messageCreate', (message: Message) => {
 	// Ignore messages from bots
 	if (message.author.bot) return;
 	if (!message.guild) return;
+	if (ALLOWED_GUILD_IDS.length && !ALLOWED_GUILD_IDS.includes(message.guild.id)) return;
 
-	// Restrict to the game channel (v14+)
-	if (message.channel.id !== GAME_CHANNEL_ID) return;
+	// Restrict to configured game channels (v14+)
+	if (!GAME_CHANNEL_IDS.includes(message.channel.id)) return;
 
 	const now = Date.now();
 	const previous = userCommandTimestamps.get(message.author.id) ?? 0;
