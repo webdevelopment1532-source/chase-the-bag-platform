@@ -13,7 +13,6 @@ dotenv.config();
 export const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN ?? '';
 const API_ADMIN_ID = process.env.API_ADMIN_ID ?? 'dashboard-admin';

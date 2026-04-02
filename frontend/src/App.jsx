@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
-const TABS = ['Dashboard', 'Leaderboard', 'Games', 'Affiliates', 'Codes', 'Audit Log']
+const TABS = ['Overview', 'Stake Games', 'Coin Exchange', 'Leaderboard', 'Affiliates', 'Codes', 'Audit Log']
 const API_TOKEN = import.meta.env.VITE_API_AUTH_TOKEN || ''
 const API_ADMIN_ID = import.meta.env.VITE_API_ADMIN_ID || 'dashboard-admin'
 
@@ -210,6 +210,84 @@ function DashboardView({ refreshToken }) {
   )
 }
 
+function ExchangeView({ refreshToken, search }) {
+  const overview = useFetchJson('/api/exchange/overview', refreshToken)
+  const wallets = useFetchJson('/api/exchange/wallets?limit=200', refreshToken)
+  const offers = useFetchJson('/api/exchange/offers?limit=200', refreshToken)
+  const transactions = useFetchJson('/api/exchange/transactions?limit=200', refreshToken)
+
+  return (
+    <section className="view-stack">
+      <div className="stats-grid">
+        <StatCard label="Wallets" value={overview.data?.wallets} hint="Tracked exchange wallets" />
+        <StatCard label="Total Supply" value={overview.data?.totalSupply} hint="Available + locked" />
+        <StatCard label="Locked Supply" value={overview.data?.lockedSupply} hint="Coins in open offers" />
+        <StatCard label="Open Offers" value={overview.data?.openOffers} hint="Pending exchange offers" />
+      </div>
+
+      <section className="panel">
+        <header className="panel-head"><h2>Top Wallets</h2></header>
+        <DataTable
+          columns={[
+            { key: 'userId', label: 'User ID' },
+            { key: 'availableBalance', label: 'Available' },
+            { key: 'lockedBalance', label: 'Locked' },
+            { key: 'totalBalance', label: 'Total' },
+          ]}
+          rows={wallets.data ?? []}
+          keyField="userId"
+          loading={wallets.loading}
+          error={wallets.error}
+          searchValue={search}
+          searchKeys={['userId']}
+        />
+      </section>
+
+      <section className="panel">
+        <header className="panel-head"><h2>Exchange Offers</h2></header>
+        <DataTable
+          columns={[
+            { key: 'id', label: '#' },
+            { key: 'senderUserId', label: 'Sender' },
+            { key: 'recipientUserId', label: 'Recipient' },
+            { key: 'amount', label: 'Amount' },
+            { key: 'status', label: 'Status', render: (value) => <Badge value={value} /> },
+            { key: 'createdAt', label: 'Created', render: (value) => (value ? new Date(value).toLocaleString() : '-') },
+          ]}
+          rows={offers.data ?? []}
+          keyField="id"
+          loading={offers.loading}
+          error={offers.error}
+          searchValue={search}
+          searchKeys={['senderUserId', 'recipientUserId', 'status']}
+        />
+      </section>
+
+      <section className="panel">
+        <header className="panel-head"><h2>Exchange Transactions</h2></header>
+        <DataTable
+          columns={[
+            { key: 'id', label: '#' },
+            { key: 'userId', label: 'User' },
+            { key: 'counterpartyUserId', label: 'Counterparty' },
+            { key: 'kind', label: 'Kind' },
+            { key: 'direction', label: 'Direction', render: (value) => <Badge value={value} /> },
+            { key: 'amount', label: 'Amount' },
+            { key: 'balanceAfter', label: 'Balance After' },
+            { key: 'createdAt', label: 'Time', render: (value) => (value ? new Date(value).toLocaleString() : '-') },
+          ]}
+          rows={transactions.data ?? []}
+          keyField="id"
+          loading={transactions.loading}
+          error={transactions.error}
+          searchValue={search}
+          searchKeys={['userId', 'counterpartyUserId', 'kind', 'direction']}
+        />
+      </section>
+    </section>
+  )
+}
+
 function LeaderboardView({ refreshToken, search }) {
   const data = useFetchJson('/api/leaderboard?limit=200', refreshToken)
   return (
@@ -329,7 +407,7 @@ function AuditView({ refreshToken, search }) {
 }
 
 function App() {
-  const [tab, setTab] = useState('Dashboard')
+  const [tab, setTab] = useState('Overview')
   const [search, setSearch] = useState('')
   const [autoRefresh, setAutoRefresh] = useState(0)
   const [manualRefresh, setManualRefresh] = useState(0)
@@ -339,9 +417,10 @@ function App() {
   const refreshToken = useAutoRefresh(autoRefresh, manualRefresh)
 
   const views = {
-    Dashboard: <DashboardView refreshToken={refreshToken} />,
+    Overview: <DashboardView refreshToken={refreshToken} />,
+    'Coin Exchange': <ExchangeView refreshToken={refreshToken} search={search} />,
+    'Stake Games': <GamesView refreshToken={refreshToken} search={search} gameFilter={gameFilter} />,
     Leaderboard: <LeaderboardView refreshToken={refreshToken} search={search} />,
-    Games: <GamesView refreshToken={refreshToken} search={search} gameFilter={gameFilter} />,
     Affiliates: <AffiliatesView refreshToken={refreshToken} search={search} statusFilter={statusFilter} />,
     Codes: <CodesView refreshToken={refreshToken} search={search} />,
     'Audit Log': <AuditView refreshToken={refreshToken} search={search} />,
@@ -351,10 +430,10 @@ function App() {
     <main className="shell">
       <header className="topbar">
         <div>
-          <p className="kicker">Advanced Operations Console</p>
-          <h1>Game Server Competition Dashboard</h1>
+          <p className="kicker">Monitoring Console (Frontend)</p>
+          <h1>Chase The Bag Monitoring Dashboard</h1>
         </div>
-        <p className="topbar-note">Live API at /api</p>
+        <p className="topbar-note">Runs on :5173, reads API from :3001</p>
       </header>
 
       <section className="toolbar panel">

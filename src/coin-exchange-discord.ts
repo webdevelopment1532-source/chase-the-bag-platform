@@ -5,7 +5,10 @@ import {
   ButtonStyle,
   Client,
   EmbedBuilder,
+  ModalBuilder,
   Message,
+  TextInputBuilder,
+  TextInputStyle,
   User,
 } from 'discord.js';
 import {
@@ -147,6 +150,7 @@ function buildOffersEmbed(
     .setTitle('My Exchange Offers')
     .setDescription(rows.join('\n'))
     .setColor(0x3498db)
+    .addFields({ name: 'Actions', value: 'Use the action buttons below this panel to accept/cancel open offers on this page.' })
     .setFooter({ text: `Offers page ${page}/${totalPages}` })
     .setTimestamp();
 }
@@ -181,6 +185,10 @@ function buildMainButtons(userId: string) {
       new ButtonBuilder().setCustomId(`exchange_wallet:${userId}`).setLabel('Wallet').setStyle(ButtonStyle.Success),
       new ButtonBuilder().setCustomId(`exchange_offers:${userId}:1`).setLabel('Offers').setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId(`exchange_history:${userId}:1`).setLabel('History').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(`exchange_send_modal:${userId}`).setLabel('Send').setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(`exchange_offer_modal:${userId}`).setLabel('New Offer').setStyle(ButtonStyle.Primary)
+    ),
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(`exchange_help:${userId}`).setLabel('Commands').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(`exchange_refresh:${userId}`).setLabel('Refresh').setStyle(ButtonStyle.Secondary)
     ),
@@ -219,11 +227,149 @@ function buildPagedButtons(userId: string, action: 'exchange_offers' | 'exchange
   ];
 }
 
+function buildOfferActionButtons(
+  userId: string,
+  offers: Awaited<ReturnType<typeof listUserOffers>>,
+  page: number,
+  pageSize: number,
+) {
+  const start = (page - 1) * pageSize;
+  const pageItems = offers.slice(start, start + pageSize);
+  const buttons: ButtonBuilder[] = [];
+
+  for (const offer of pageItems) {
+    if (offer.status !== 'open') continue;
+    if (offer.recipientUserId === userId) {
+      buttons.push(
+        new ButtonBuilder()
+          .setCustomId(`exchange_offer_accept:${userId}:${offer.id}:${page}`)
+          .setLabel(`Accept #${offer.id}`)
+          .setStyle(ButtonStyle.Success)
+      );
+    } else if (offer.senderUserId === userId) {
+      buttons.push(
+        new ButtonBuilder()
+          .setCustomId(`exchange_offer_cancel:${userId}:${offer.id}:${page}`)
+          .setLabel(`Cancel #${offer.id}`)
+          .setStyle(ButtonStyle.Danger)
+      );
+    }
+    if (buttons.length >= 5) break;
+  }
+
+  if (!buttons.length) return [] as Array<ActionRowBuilder<ButtonBuilder>>;
+  return [new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons)];
+}
+
+function buildSendModal(userId: string) {
+  const modal = new ModalBuilder().setCustomId(`exchange_send_submit:${userId}`).setTitle('Send Coins');
+  const recipientInput = new TextInputBuilder()
+    .setCustomId('recipientUserId')
+    .setLabel('Recipient Discord User ID')
+    .setPlaceholder('123456789012345678')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+  const amountInput = new TextInputBuilder()
+    .setCustomId('amount')
+    .setLabel('Amount')
+    .setPlaceholder('25.5')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+  modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(recipientInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(amountInput)
+  );
+  return modal;
+}
+
+function buildOfferModal(userId: string) {
+  const modal = new ModalBuilder().setCustomId(`exchange_offer_submit:${userId}`).setTitle('Create Offer');
+  const recipientInput = new TextInputBuilder()
+    .setCustomId('recipientUserId')
+    .setLabel('Recipient Discord User ID')
+    .setPlaceholder('123456789012345678')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+  const amountInput = new TextInputBuilder()
+    .setCustomId('amount')
+    .setLabel('Amount')
+    .setPlaceholder('50')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+  const noteInput = new TextInputBuilder()
+    .setCustomId('note')
+    .setLabel('Note (optional)')
+    .setPlaceholder('Optional context for this offer')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(false);
+  modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(recipientInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(amountInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(noteInput)
+  );
+  return modal;
+}
+
 async function handlePanelButton(interaction: ButtonInteraction) {
-  const [action, ownerId, pageRaw] = interaction.customId.split(':');
+  const parts = interaction.customId.split(':');
+  const action = parts[0];
+  const ownerId = parts[1];
+  const pageRaw = action === 'exchange_offer_accept' || action === 'exchange_offer_cancel' ? parts[3] : parts[2];
   const page = Number.isFinite(Number(pageRaw)) ? Math.max(1, Number(pageRaw)) : 1;
   if (interaction.user.id !== ownerId) {
     await interaction.reply({ content: 'This panel belongs to another user.', ephemeral: true });
+    return;
+  }
+
+  if (action === 'exchange_send_modal') {
+    await interaction.showModal(buildSendModal(interaction.user.id));
+    const submit = await interaction.awaitModalSubmit({
+      time: 120000,
+      filter: (modal) => modal.customId === `exchange_send_submit:${interaction.user.id}` && modal.user.id === interaction.user.id,
+    }).catch(() => null);
+    if (!submit) return;
+
+    const recipientUserId = submit.fields.getTextInputValue('recipientUserId').trim();
+    const amount = parseCoinAmount(submit.fields.getTextInputValue('amount').trim());
+    if (!recipientUserId || amount === null) {
+      await submit.reply({ content: 'Invalid recipient or amount.', ephemeral: true });
+      return;
+    }
+
+    await transferCoins({
+      fromUserId: submit.user.id,
+      toUserId: recipientUserId,
+      amount,
+      serverId: submit.guild?.id ?? 'dm',
+    });
+    await submit.reply({ content: `Transferred **${amount.toFixed(2)}** coins to <@${recipientUserId}>.`, ephemeral: true });
+    return;
+  }
+
+  if (action === 'exchange_offer_modal') {
+    await interaction.showModal(buildOfferModal(interaction.user.id));
+    const submit = await interaction.awaitModalSubmit({
+      time: 120000,
+      filter: (modal) => modal.customId === `exchange_offer_submit:${interaction.user.id}` && modal.user.id === interaction.user.id,
+    }).catch(() => null);
+    if (!submit) return;
+
+    const recipientUserId = submit.fields.getTextInputValue('recipientUserId').trim();
+    const amount = parseCoinAmount(submit.fields.getTextInputValue('amount').trim());
+    const note = submit.fields.getTextInputValue('note').trim();
+    if (!recipientUserId || amount === null) {
+      await submit.reply({ content: 'Invalid recipient or amount.', ephemeral: true });
+      return;
+    }
+
+    const offerId = await createExchangeOffer({
+      senderUserId: submit.user.id,
+      recipientUserId,
+      amount,
+      note: note || undefined,
+      serverId: submit.guild?.id ?? 'dm',
+    });
+    await submit.reply({ content: `Created offer **#${offerId}** for <@${recipientUserId}> worth **${amount.toFixed(2)}** coins.`, ephemeral: true });
     return;
   }
 
@@ -235,12 +381,36 @@ async function handlePanelButton(interaction: ButtonInteraction) {
 
   if (action === 'exchange_offers') {
     const offers = await listUserOffers(interaction.user.id);
-    const pageSize = 5;
+    const pageSize = 3;
     const totalPages = Math.max(1, Math.ceil(offers.length / pageSize));
     const safePage = Math.min(page, totalPages);
     await interaction.update({
       embeds: [buildOffersEmbed(interaction.user.id, offers, safePage, pageSize, totalPages)],
-      components: buildPagedButtons(interaction.user.id, 'exchange_offers', safePage, totalPages),
+      components: [...buildOfferActionButtons(interaction.user.id, offers, safePage, pageSize), ...buildPagedButtons(interaction.user.id, 'exchange_offers', safePage, totalPages)],
+    });
+    return;
+  }
+
+  if (action === 'exchange_offer_accept' || action === 'exchange_offer_cancel') {
+    const offerId = Number(parts[2]);
+    if (!Number.isInteger(offerId) || offerId < 1) {
+      await interaction.reply({ content: 'Invalid offer id.', ephemeral: true });
+      return;
+    }
+
+    if (action === 'exchange_offer_accept') {
+      await acceptExchangeOffer({ recipientUserId: interaction.user.id, offerId, serverId: interaction.guild?.id ?? 'dm' });
+    } else {
+      await cancelExchangeOffer({ requesterUserId: interaction.user.id, offerId, serverId: interaction.guild?.id ?? 'dm' });
+    }
+
+    const offers = await listUserOffers(interaction.user.id);
+    const pageSize = 3;
+    const totalPages = Math.max(1, Math.ceil(offers.length / pageSize));
+    const safePage = Math.min(page, totalPages);
+    await interaction.update({
+      embeds: [buildOffersEmbed(interaction.user.id, offers, safePage, pageSize, totalPages)],
+      components: [...buildOfferActionButtons(interaction.user.id, offers, safePage, pageSize), ...buildPagedButtons(interaction.user.id, 'exchange_offers', safePage, totalPages)],
     });
     return;
   }
