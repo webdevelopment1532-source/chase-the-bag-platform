@@ -6,6 +6,7 @@ import { getDbConnection } from './db';
 import { logOperation } from './audit-log';
 import { getCoinExchangeOverview, listCoinOffers, listCoinTransactions, listCoinWallets } from './coin-exchange';
 import { answerWithContext, getRagIndex, queryRag } from './rag';
+import { scrapeStakeCodes } from './scraper';
 
 dotenv.config();
 
@@ -351,6 +352,53 @@ app.get('/api/rag/retrieve', sensitiveLimiter, async (req, res) => {
     res.json(response);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Scraper: trigger code scraping ---
+app.post('/api/scraper/run', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_trigger_scraper', req);
+    const codes = await scrapeStakeCodes();
+    res.json({
+      ok: true,
+      message: `Scraper completed: ${codes.length} codes found`,
+      count: codes.length,
+      sample: codes.slice(0, 3),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ 
+      ok: false, 
+      error: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// --- Scraper: view latest codes ---
+app.get('/api/scraper/status', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_view_scraper_status', req);
+    const db = await getDbConnection();
+    const [[codeCount]] = (await db.execute('SELECT COUNT(*) AS total FROM codes')) as any;
+    const [recentCodes] = (await db.execute(
+      'SELECT code, source, created_at FROM codes ORDER BY created_at DESC LIMIT 10'
+    )) as any;
+    await db.end();
+
+    res.json({
+      ok: true,
+      totalCodes: codeCount.total,
+      recentCodes,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ 
+      ok: false, 
+      error: err.message,
+      timestamp: new Date().toISOString(),
+    });
   }
 });
 

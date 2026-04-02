@@ -3,6 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = void 0;
+exports.getProvidedToken = getProvidedToken;
+exports.authenticateApi = authenticateApi;
+exports.auditApiAccess = auditApiAccess;
+exports.getLimit = getLimit;
 exports.startApiServer = startApiServer;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
@@ -12,10 +17,11 @@ const db_1 = require("./db");
 const audit_log_1 = require("./audit-log");
 const coin_exchange_1 = require("./coin-exchange");
 const rag_1 = require("./rag");
+const scraper_1 = require("./scraper");
 dotenv_1.default.config();
-const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
-app.use(express_1.default.json());
+exports.app = (0, express_1.default)();
+exports.app.use((0, cors_1.default)());
+exports.app.use(express_1.default.json());
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN ?? '';
 const API_ADMIN_ID = process.env.API_ADMIN_ID ?? 'dashboard-admin';
 const ALLOWED_GAMES = new Set(['coinflip', 'dice', 'roulette', 'crash', 'blackjack', 'slots', 'plinko', 'mines']);
@@ -68,7 +74,7 @@ async function auditApiAccess(action, req) {
         // Best-effort logging: do not fail requests on audit write issues.
     }
 }
-app.use('/api', apiLimiter, authenticateApi);
+exports.app.use('/api', apiLimiter, authenticateApi);
 function getLimit(input, fallback, max) {
     const parsed = Number(input);
     if (!Number.isFinite(parsed))
@@ -80,7 +86,7 @@ function getLimit(input, fallback, max) {
     return Math.floor(parsed);
 }
 // --- Leaderboard ---
-app.get('/api/leaderboard', async (req, res) => {
+exports.app.get('/api/leaderboard', async (req, res) => {
     try {
         await auditApiAccess('api_view_leaderboard', req);
         const limit = getLimit(req.query.limit, 50, 500);
@@ -94,7 +100,7 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 // --- Game results ---
-app.get('/api/game-results', async (req, res) => {
+exports.app.get('/api/game-results', async (req, res) => {
     try {
         await auditApiAccess('api_view_game_results', req);
         const limit = getLimit(req.query.limit, 100, 500);
@@ -115,7 +121,7 @@ app.get('/api/game-results', async (req, res) => {
     }
 });
 // --- Affiliates ---
-app.get('/api/affiliates', async (req, res) => {
+exports.app.get('/api/affiliates', async (req, res) => {
     try {
         await auditApiAccess('api_view_affiliates', req);
         const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
@@ -135,7 +141,7 @@ app.get('/api/affiliates', async (req, res) => {
     }
 });
 // --- Codes ---
-app.get('/api/codes', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/codes', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_codes', req);
         const limit = getLimit(req.query.limit, 100, 500);
@@ -149,7 +155,7 @@ app.get('/api/codes', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- Audit log ---
-app.get('/api/audit-log', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/audit-log', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_audit_log', req);
         const limit = getLimit(req.query.limit, 100, 500);
@@ -163,7 +169,7 @@ app.get('/api/audit-log', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- Stats summary ---
-app.get('/api/stats', async (_req, res) => {
+exports.app.get('/api/stats', async (_req, res) => {
     try {
         await auditApiAccess('api_view_stats', _req);
         const db = await (0, db_1.getDbConnection)();
@@ -184,7 +190,7 @@ app.get('/api/stats', async (_req, res) => {
     }
 });
 // --- Advanced analytics overview ---
-app.get('/api/overview', async (_req, res) => {
+exports.app.get('/api/overview', async (_req, res) => {
     try {
         await auditApiAccess('api_view_overview', _req);
         const db = await (0, db_1.getDbConnection)();
@@ -218,7 +224,7 @@ app.get('/api/overview', async (_req, res) => {
     }
 });
 // --- Coin exchange overview ---
-app.get('/api/exchange/overview', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/exchange/overview', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_coin_exchange_overview', req);
         const overview = await (0, coin_exchange_1.getCoinExchangeOverview)();
@@ -229,7 +235,7 @@ app.get('/api/exchange/overview', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- Coin exchange wallets ---
-app.get('/api/exchange/wallets', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/exchange/wallets', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_coin_exchange_wallets', req);
         const limit = getLimit(req.query.limit, 50, 500);
@@ -241,7 +247,7 @@ app.get('/api/exchange/wallets', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- Coin exchange offers ---
-app.get('/api/exchange/offers', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/exchange/offers', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_coin_exchange_offers', req);
         const limit = getLimit(req.query.limit, 50, 500);
@@ -258,7 +264,7 @@ app.get('/api/exchange/offers', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- Coin exchange transactions ---
-app.get('/api/exchange/transactions', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/exchange/transactions', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_coin_exchange_transactions', req);
         const limit = getLimit(req.query.limit, 100, 500);
@@ -271,7 +277,7 @@ app.get('/api/exchange/transactions', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- RAG index status ---
-app.get('/api/rag/index', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/rag/index', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_view_rag_index', req);
         const refresh = String(req.query.refresh ?? '').toLowerCase() === 'true';
@@ -283,7 +289,7 @@ app.get('/api/rag/index', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- RAG query ---
-app.post('/api/rag/query', sensitiveLimiter, async (req, res) => {
+exports.app.post('/api/rag/query', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_query_rag', req);
         const query = typeof req.body?.query === 'string' ? req.body.query.trim() : '';
@@ -300,7 +306,7 @@ app.post('/api/rag/query', sensitiveLimiter, async (req, res) => {
     }
 });
 // --- RAG retrieval (raw chunks) ---
-app.get('/api/rag/retrieve', sensitiveLimiter, async (req, res) => {
+exports.app.get('/api/rag/retrieve', sensitiveLimiter, async (req, res) => {
     try {
         await auditApiAccess('api_retrieve_rag', req);
         const query = typeof req.query.query === 'string' ? req.query.query.trim() : '';
@@ -316,8 +322,52 @@ app.get('/api/rag/retrieve', sensitiveLimiter, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+// --- Scraper: trigger code scraping ---
+exports.app.post('/api/scraper/run', sensitiveLimiter, async (req, res) => {
+    try {
+        await auditApiAccess('api_trigger_scraper', req);
+        const codes = await (0, scraper_1.scrapeStakeCodes)();
+        res.json({
+            ok: true,
+            message: `Scraper completed: ${codes.length} codes found`,
+            count: codes.length,
+            sample: codes.slice(0, 3),
+            timestamp: new Date().toISOString(),
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            ok: false,
+            error: err.message,
+            timestamp: new Date().toISOString(),
+        });
+    }
+});
+// --- Scraper: view latest codes ---
+exports.app.get('/api/scraper/status', sensitiveLimiter, async (req, res) => {
+    try {
+        await auditApiAccess('api_view_scraper_status', req);
+        const db = await (0, db_1.getDbConnection)();
+        const [[codeCount]] = (await db.execute('SELECT COUNT(*) AS total FROM codes'));
+        const [recentCodes] = (await db.execute('SELECT code, source, created_at FROM codes ORDER BY created_at DESC LIMIT 10'));
+        await db.end();
+        res.json({
+            ok: true,
+            totalCodes: codeCount.total,
+            recentCodes,
+            timestamp: new Date().toISOString(),
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            ok: false,
+            error: err.message,
+            timestamp: new Date().toISOString(),
+        });
+    }
+});
 function startApiServer(port = 3001) {
-    app.listen(port, () => {
+    exports.app.listen(port, () => {
         console.log(`API server running on http://localhost:${port}`);
     });
 }

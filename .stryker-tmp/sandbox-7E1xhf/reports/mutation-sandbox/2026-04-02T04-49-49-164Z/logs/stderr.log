@@ -1,0 +1,16 @@
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+StrykerError: Error: ENOENT (chdir) Error: ENOENT: no such file or directory, chdir '/home/cyber44/chase-the-bag-platform' -> '/home/cyber44/chase-the-bag-platform/.stryker-sandbox-tmp/sandbox-BvNadt'
+    at wrappedChdir (node:internal/bootstrap/switches/does_own_process_state:128:14)
+    at process.chdir (node:internal/worker:113:5)
+    at ChildProcessProxyWorker.handleInit (file:///home/cyber44/chase-the-bag-platform/node_modules/@stryker-mutator/core/dist/src/child-proxy/child-process-proxy-worker.js:72:25)
+    at ChildProcess.<anonymous> [90m(file:///home/cyber44/chase-the-bag-platform/[39mnode_modules/[4m@stryker-mutator/core[24m/dist/src/child-proxy/child-process-proxy.js:132:39[90m)[39m
+[90m    at ChildProcess.emit (node:events:519:28)[39m
+[90m    at emit (node:internal/child_process:949:14)[39m
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)[39m {
+  innerError: [90mundefined[39m
+}
+
+Node.js v22.22.1

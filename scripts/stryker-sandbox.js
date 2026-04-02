@@ -9,10 +9,13 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// Get project root from environment or determine from script location
-const PROJECT_ROOT = process.env.PROJECT_ROOT || 
-                     process.env.INIT_CWD ||  // npm's initial cwd
-                     path.dirname(path.dirname(__dirname));
+// Resolve project root reliably for direct runs and npm --prefix runs.
+const PROJECT_ROOT =
+    process.env.PROJECT_ROOT ||
+    (process.env.npm_package_json ? path.dirname(process.env.npm_package_json) : null) ||
+    process.cwd() ||
+    process.env.INIT_CWD ||
+    path.dirname(__dirname);
 const SANDBOX_DIR = path.join(PROJECT_ROOT, '.stryker-sandbox');
 const REPORTS_DIR = path.join(PROJECT_ROOT, 'reports', 'mutation-sandbox');
 const TIMESTAMP = new Date().toISOString().replace(/[:.]/g, '-');
