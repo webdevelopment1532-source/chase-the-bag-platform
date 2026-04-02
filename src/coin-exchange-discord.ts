@@ -80,7 +80,7 @@ function formatHistoryMessage(transactions: Awaited<ReturnType<typeof listUserTr
   ].join('\n');
 }
 
-function buildExchangePanelEmbed(user: User) {
+function buildMainPanelEmbed(user: User) {
   return new EmbedBuilder()
     .setTitle('Chase The Bag Coin Exchange')
     .setDescription(
@@ -111,20 +111,117 @@ function buildExchangePanelEmbed(user: User) {
     .setTimestamp();
 }
 
-function buildExchangePanelButtons(userId: string) {
+function buildWalletEmbed(user: User, wallet: Awaited<ReturnType<typeof getCoinWallet>>) {
+  return new EmbedBuilder()
+    .setTitle('Wallet Overview')
+    .setDescription(`Account: <@${user.id}>`)
+    .addFields(
+      { name: 'Available', value: wallet.availableBalance.toFixed(2), inline: true },
+      { name: 'Locked', value: wallet.lockedBalance.toFixed(2), inline: true },
+      { name: 'Total', value: wallet.totalBalance.toFixed(2), inline: true }
+    )
+    .setColor(0x2ecc71)
+    .setFooter({ text: 'Exchange Wallet' })
+    .setTimestamp();
+}
+
+function buildOffersEmbed(
+  userId: string,
+  offers: Awaited<ReturnType<typeof listUserOffers>>,
+  page: number,
+  pageSize: number,
+  totalPages: number,
+) {
+  const start = (page - 1) * pageSize;
+  const pageItems = offers.slice(start, start + pageSize);
+  const rows = pageItems.length
+    ? pageItems.map((offer) => {
+        const role = offer.senderUserId === userId ? 'OUT' : 'IN';
+        const counterparty = offer.senderUserId === userId ? offer.recipientUserId : offer.senderUserId;
+        const note = offer.note ? ` | ${offer.note}` : '';
+        return `#${offer.id} ${role} ${offer.amount.toFixed(2)} with <@${counterparty}> | ${offer.status}${note}`;
+      })
+    : ['No exchange offers yet.'];
+
+  return new EmbedBuilder()
+    .setTitle('My Exchange Offers')
+    .setDescription(rows.join('\n'))
+    .setColor(0x3498db)
+    .setFooter({ text: `Offers page ${page}/${totalPages}` })
+    .setTimestamp();
+}
+
+function buildHistoryEmbed(
+  transactions: Awaited<ReturnType<typeof listUserTransactions>>,
+  page: number,
+  pageSize: number,
+  totalPages: number,
+) {
+  const start = (page - 1) * pageSize;
+  const pageItems = transactions.slice(start, start + pageSize);
+  const rows = pageItems.length
+    ? pageItems.map((entry) => {
+        const sign = entry.direction === 'credit' ? '+' : '-';
+        const counterparty = entry.counterpartyUserId ? ` with <@${entry.counterpartyUserId}>` : '';
+        return `#${entry.id} ${entry.kind}${counterparty} | ${sign}${entry.amount.toFixed(2)} | bal ${entry.balanceAfter.toFixed(2)}`;
+      })
+    : ['No coin exchange history yet.'];
+
+  return new EmbedBuilder()
+    .setTitle('Recent Exchange History')
+    .setDescription(rows.join('\n'))
+    .setColor(0x9b59b6)
+    .setFooter({ text: `History page ${page}/${totalPages}` })
+    .setTimestamp();
+}
+
+function buildMainButtons(userId: string) {
   return [
     new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(`exchange_wallet:${userId}`).setLabel('Wallet').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId(`exchange_offers:${userId}`).setLabel('Offers').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(`exchange_history:${userId}`).setLabel('History').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`exchange_offers:${userId}:1`).setLabel('Offers').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(`exchange_history:${userId}:1`).setLabel('History').setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId(`exchange_help:${userId}`).setLabel('Commands').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(`exchange_refresh:${userId}`).setLabel('Refresh').setStyle(ButtonStyle.Secondary)
     ),
   ];
 }
 
+function buildBackButtons(userId: string) {
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(`exchange_back:${userId}`).setLabel('Back').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`exchange_refresh:${userId}`).setLabel('Refresh').setStyle(ButtonStyle.Secondary)
+    ),
+  ];
+}
+
+function buildPagedButtons(userId: string, action: 'exchange_offers' | 'exchange_history', page: number, totalPages: number) {
+  const prevPage = Math.max(1, page - 1);
+  const nextPage = Math.min(totalPages, page + 1);
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`${action}:${userId}:${prevPage}`)
+        .setLabel('Prev')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(page <= 1),
+      new ButtonBuilder()
+        .setCustomId(`exchange_back:${userId}`)
+        .setLabel('Back')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(`${action}:${userId}:${nextPage}`)
+        .setLabel('Next')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(page >= totalPages)
+    ),
+  ];
+}
+
 async function handlePanelButton(interaction: ButtonInteraction) {
-  const [action, ownerId] = interaction.customId.split(':');
+  const [action, ownerId, pageRaw] = interaction.customId.split(':');
+  const page = Number.isFinite(Number(pageRaw)) ? Math.max(1, Number(pageRaw)) : 1;
   if (interaction.user.id !== ownerId) {
     await interaction.reply({ content: 'This panel belongs to another user.', ephemeral: true });
     return;
@@ -132,19 +229,31 @@ async function handlePanelButton(interaction: ButtonInteraction) {
 
   if (action === 'exchange_wallet') {
     const wallet = await getCoinWallet(interaction.user.id);
-    await interaction.reply({ content: formatWalletMessage(interaction.user, wallet), ephemeral: true });
+    await interaction.update({ embeds: [buildWalletEmbed(interaction.user, wallet)], components: buildBackButtons(interaction.user.id) });
     return;
   }
 
   if (action === 'exchange_offers') {
     const offers = await listUserOffers(interaction.user.id);
-    await interaction.reply({ content: formatOffersMessage(interaction.user.id, offers), ephemeral: true });
+    const pageSize = 5;
+    const totalPages = Math.max(1, Math.ceil(offers.length / pageSize));
+    const safePage = Math.min(page, totalPages);
+    await interaction.update({
+      embeds: [buildOffersEmbed(interaction.user.id, offers, safePage, pageSize, totalPages)],
+      components: buildPagedButtons(interaction.user.id, 'exchange_offers', safePage, totalPages),
+    });
     return;
   }
 
   if (action === 'exchange_history') {
-    const transactions = await listUserTransactions(interaction.user.id, 8);
-    await interaction.reply({ content: formatHistoryMessage(transactions), ephemeral: true });
+    const transactions = await listUserTransactions(interaction.user.id, 24);
+    const pageSize = 6;
+    const totalPages = Math.max(1, Math.ceil(transactions.length / pageSize));
+    const safePage = Math.min(page, totalPages);
+    await interaction.update({
+      embeds: [buildHistoryEmbed(transactions, safePage, pageSize, totalPages)],
+      components: buildPagedButtons(interaction.user.id, 'exchange_history', safePage, totalPages),
+    });
     return;
   }
 
@@ -167,13 +276,18 @@ async function handlePanelButton(interaction: ButtonInteraction) {
     return;
   }
 
-  await interaction.reply({ content: 'Dashboard refreshed.', ephemeral: true });
+  if (action === 'exchange_back' || action === 'exchange_refresh') {
+    await interaction.update({ embeds: [buildMainPanelEmbed(interaction.user)], components: buildMainButtons(interaction.user.id) });
+    return;
+  }
+
+  await interaction.reply({ content: 'Unsupported dashboard action.', ephemeral: true });
 }
 
 async function sendExchangePanel(message: Message) {
   const panel = await message.reply({
-    embeds: [buildExchangePanelEmbed(message.author)],
-    components: buildExchangePanelButtons(message.author.id),
+    embeds: [buildMainPanelEmbed(message.author)],
+    components: buildMainButtons(message.author.id),
   });
 
   const collector = panel.createMessageComponentCollector({ time: 10 * 60 * 1000 });
