@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+# Block direct pushes to main. Use feature branches + PRs.
+protected_branch="main"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    "refs/heads/$protected_branch")
+      echo "Push blocked: direct pushes to '$protected_branch' are disabled locally."
+      echo "Create a feature branch and open a pull request instead."
+      exit 1
+      ;;
+  esac
+done
+
+exit 0

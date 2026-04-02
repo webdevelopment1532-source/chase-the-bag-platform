@@ -17,6 +17,9 @@
     "stryker:sandbox": "node scripts/stryker-sandbox.js",
     "stryker:sandbox:bash": "bash scripts/stryker-sandbox.sh",
     "stryker:sandbox:cleanup": "rm -rf .stryker-tmp .stryker-sandbox .stryker-sandbox-tmp && npx jest --clearCache",
+    "scraper": "node scripts/scraper-cli.js",
+    "scraper:watch": "node scripts/scraper-cli.js --watch",
+    "scraper:once": "node scripts/scraper-cli.js",
     "rag:index": "npm run build && node dist/rag-cli.js --index",
     "rag:query": "npm run build && node dist/rag-cli.js"
   },
