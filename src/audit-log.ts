@@ -4,10 +4,14 @@ import { getDbConnection } from './db';
 
 export async function logOperation({ userId, serverId, action, details }: { userId: string, serverId: string, action: string, details?: string }) {
   const db = await getDbConnection();
-  await db.execute(
-    'INSERT INTO audit_logs (user_id, server_id, action, details) VALUES (?, ?, ?, ?)',
-    [userId, serverId, action, details || null]
-  );
+  try {
+    await db.execute(
+      'INSERT INTO audit_logs (user_id, server_id, action, details) VALUES (?, ?, ?, ?)',
+      [userId, serverId, action, details || null]
+    );
+  } finally {
+    await db.end();
+  }
 }
 
 // Example usage:

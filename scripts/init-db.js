@@ -28,7 +28,7 @@ const connectionConfig = {
   database: getDbEnv('NAME'),
 };
 
-const schemaFiles = ['codes.sql', 'leaderboard.sql', 'audit-log.sql', 'affiliates.sql'];
+const schemaFiles = ['codes.sql', 'leaderboard.sql', 'audit-log.sql', 'affiliates.sql', 'coin-exchange.sql'];
 
 async function main() {
   const connection = await mysql.createConnection(connectionConfig);
