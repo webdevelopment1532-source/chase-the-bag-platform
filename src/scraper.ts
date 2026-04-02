@@ -1,6 +1,6 @@
 // Scraper for Stake.us codes and selfmade code generator
 import fetch from 'node-fetch';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import { getDbConnection } from './db';
 import { logOperation } from './audit-log';
 

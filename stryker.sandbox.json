@@ -9,9 +9,21 @@
     "projectType": "custom",
     "configFile": "jest.config.js"
   },
-  "mutate": ["src/games.ts"],
+  "mutate": [
+    "src/analytics.ts",
+    "src/antifraud.ts",
+    "src/audit-log.ts",
+    "src/chart.ts",
+    "src/db.ts",
+    "src/games.ts",
+    "src/personalize.ts",
+    "src/referral.ts",
+    "src/scraper.ts",
+    "src/virtual-board.ts"
+  ],
   "maxTestRunnerReuse": 1,
   "concurrency": 1,
+  "testRunnerNodeArgs": ["--max-old-space-size=4096"],
   "cleanTempDir": "always",
   "tempDirName": ".stryker-sandbox-tmp",
   "disableTypeChecks": true,
