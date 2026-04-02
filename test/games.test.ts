@@ -10,6 +10,20 @@ function cardIndexToRandom(cardIndex: number) {
 }
 
 describe('Games', () => {
+    test('game functions use default random source when omitted', () => {
+        const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+        const blackjack = playBlackjack();
+        const plinko = playPlinko();
+        const mines = playMines();
+
+        expect(blackjack).toContain('Blackjack');
+        expect(plinko).toContain('Plinko');
+        expect(mines).toContain('Mines');
+
+        randomSpy.mockRestore();
+    });
+
     test('blackjack includes player, dealer, and result lines', () => {
         const result = playBlackjack(() => 0.5);
         expect(result).toContain('Blackjack');
