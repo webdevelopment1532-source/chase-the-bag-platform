@@ -39,6 +39,7 @@ function getBlackjackValue(hand: string[]) {
 function buildMinesBoard(minePositions: Set<number>, pickedTile: number) {
     const cells: string[] = [];
 
+    // Stryker disable next-line EqualityOperator: index 9 is never rendered by the 3x3 board slices.
     for (let index = 0; index < MINE_TILES; index += 1) {
         if (index === pickedTile) {
             cells.push(minePositions.has(index) ? '💥' : '💎');
@@ -100,13 +101,20 @@ export function playPlinko(random: RandomSource = Math.random): string {
 
 export function playMines(random: RandomSource = Math.random): string {
     const minePositions = new Set<number>();
-    while (minePositions.size < MINE_COUNT) {
+    let attempts = 0;
+    while (minePositions.size < MINE_COUNT && attempts < 100) {
         minePositions.add(pickIndex(MINE_TILES, random));
+        attempts += 1;
+    }
+    // Fallback: place remaining mines sequentially
+    for (let i = 0; minePositions.size < MINE_COUNT; i += 1) {
+        minePositions.add(i);
     }
 
     const pickedTile = pickIndex(MINE_TILES, random);
     const safePick = !minePositions.has(pickedTile);
     const safeTiles = MINE_TILES - MINE_COUNT;
+    // Stryker disable next-line StringLiteral: fallback value is unreachable because boom returns early.
     const multiplier = safePick ? (1 + MINE_COUNT / safeTiles).toFixed(2) : '0.00';
     const board = buildMinesBoard(minePositions, pickedTile);
 
