@@ -22,6 +22,7 @@ dotenv_1.default.config();
 exports.app = (0, express_1.default)();
 exports.app.use((0, cors_1.default)());
 exports.app.use(express_1.default.json());
+exports.app.use(express_1.default.static('public'));
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN ?? '';
 const API_ADMIN_ID = process.env.API_ADMIN_ID ?? 'dashboard-admin';
 const ALLOWED_GAMES = new Set(['coinflip', 'dice', 'roulette', 'crash', 'blackjack', 'slots', 'plinko', 'mines']);
