@@ -56,7 +56,7 @@ registerAdvancedCommands(client);
 registerAffiliateCommands(client, OWNER_DISCORD_USER_ID);
 registerCoinExchangeCommands(client, OWNER_DISCORD_USER_ID);
 
-// Start automated Stake ad drops
+// Start automated promo ad drops
 startAutomatedAdDrops(client);
 
 // Announce regular events and tournaments on startup

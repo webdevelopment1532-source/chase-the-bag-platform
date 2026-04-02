@@ -2,6 +2,11 @@ node_modules/
 coverage/
 dist/
 frontend/dist/
+.stryker-tmp/
+.stryker-sandbox/
+.stryker-sandbox-tmp/
+reports/mutation/
+reports/mutation-sandbox/
 
 # Local environment files
 .env

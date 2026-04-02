@@ -21,7 +21,7 @@ This project is designed for advanced integrations with Discord and other platfo
 For help with advanced integrations, see the `src/` directory or open an issue on GitHub.
 
 ## Project Baseline
-This repository is a Discord bot inspired by Stake.us, featuring:
+This repository is a Discord bot with original, in-house game logic (not copied from Stake or any third-party platform), featuring:
 - Coin Flip, Dice, Roulette, Crash, Blackjack, Slots, Plinko, Mines (all virtual, no real-money gambling)
 - All commands restricted to the #coin-exchange-payed-games channel
 - 100% test coverage and security checks
@@ -48,7 +48,7 @@ This repository is a Discord bot inspired by Stake.us, featuring:
 See CONTRIBUTORS.md for a list of maintainers and contact info.
 # Discord Game Server Bot
 
-This bot brings Stake.us-inspired games to your Discord server, including:
+This bot brings original casino-style mini games to your Discord server, including:
 - Coin Flip (!coinflip)
 - Dice Roll (!dice)
 - Roulette (!roulette)
@@ -67,9 +67,22 @@ All games are restricted to the #coin-exchange-payed-games channel.
 - Set `DISCORD_GAME_DB_HOST`, `DISCORD_GAME_DB_PORT`, `DISCORD_GAME_DB_USER`, `DISCORD_GAME_DB_PASS`, and `DISCORD_GAME_DB_NAME` in `.env` if you want analytics, referrals, code storage, and audit logging enabled
 - Set `GAME_CHANNEL_ID` and `COIN_EXCHANGE_CHANNEL_ID` so commands are limited to approved channels
 - Set `API_AUTH_TOKEN` and `API_ADMIN_ID` before enabling API consumers
+- Set `FRONTEND_PORT` (default `5173`) for stack health checks
 - Run `npm install`
 - Run `npm run db:init` to create the required MySQL tables
 - Run `npm run dev` or `npm run start`
+
+## VS Code Operations Cockpit
+- Run task: `Start Full Platform (Bot + Frontend)` to bring up the Discord bot/API and frontend together.
+- Run task: `Monitor: Stack Health` to validate frontend, API overview, and exchange overview endpoints.
+- Run task: `Stryker: Run in Sandbox (Node.js Isolated)` for mutation testing and robustness checks.
+- Run task: `Jest: Test Sandbox Isolation` for deterministic full-suite checks.
+
+CLI equivalents:
+- `npm run platform:up`
+- `npm run monitor:stack`
+- `npm run test:isolate`
+- `npm run stryker:sandbox`
 
 ## Coin Exchange Commands
 - `!exchange help`

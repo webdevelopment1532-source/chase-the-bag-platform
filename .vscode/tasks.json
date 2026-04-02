@@ -11,6 +11,49 @@
 			"group": "build"
 		},
 		{
+			"label": "Start Frontend Dashboard",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"frontend",
+				"run",
+				"dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start Full Platform (Bot + Frontend)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"platform:up"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Monitor: Stack Health",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"monitor:stack"
+			],
+			"problemMatcher": [],
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			}
+		},
+		{
 			"label": "Stryker: Run in Sandbox (Node.js Isolated)",
 			"type": "shell",
 			"command": "node",

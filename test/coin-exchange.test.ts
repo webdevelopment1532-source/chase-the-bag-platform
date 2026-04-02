@@ -151,11 +151,11 @@ describe('coin exchange deep tests', () => {
     expect(end).toHaveBeenCalledTimes(1);
     expect(execute).toHaveBeenCalledWith(
       'UPDATE coin_wallets SET available_balance = ? WHERE user_id = ?',
-      [5.5, 'sender']
+      [5.5, 'guild-9:sender']
     );
     expect(execute).toHaveBeenCalledWith(
       'UPDATE coin_wallets SET available_balance = ? WHERE user_id = ?',
-      [7.5, 'receiver']
+      [7.5, 'guild-9:receiver']
     );
     expect(logOperation).toHaveBeenCalledWith({
       userId: 'sender',
@@ -359,7 +359,7 @@ describe('coin exchange deep tests', () => {
 
     expect(execute).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO coin_exchange_transactions'),
-      expect.arrayContaining(['target', 'admin', 'credit', 'grant', 1, 2, null, null])
+      expect.arrayContaining(['guild:target', 'guild:admin', 'credit', 'grant', 1, 2, null, null])
     );
   });
 
@@ -452,11 +452,11 @@ describe('coin exchange deep tests', () => {
 
     expect(execute).toHaveBeenCalledWith(
       'INSERT INTO coin_exchange_offers (sender_user_id, recipient_user_id, amount, note) VALUES (?, ?, ?, ?)',
-      ['sender', 'recipient', 2, null]
+      ['guild:sender', 'guild:recipient', 2, null]
     );
     expect(execute).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO coin_exchange_transactions'),
-      expect.arrayContaining(['sender', 'recipient', 'debit', 'offer_lock', 2, 8, 88, 'Offer created'])
+      expect.arrayContaining(['guild:sender', 'guild:recipient', 'debit', 'offer_lock', 2, 8, 88, 'Offer created'])
     );
   });
 
@@ -627,14 +627,14 @@ describe('coin exchange deep tests', () => {
 
     const execute = jest.fn().mockImplementation((sql: string, params?: unknown[]) => {
       if (sql.includes('FROM coin_exchange_offers WHERE id = ? FOR UPDATE')) {
-        return Promise.resolve([[{ id: 12, status: 'open', recipient_user_id: 'recipient', sender_user_id: 'sender', amount: 4, note: 'gift' }], []]);
+        return Promise.resolve([[{ id: 12, status: 'open', recipient_user_id: 'guild:recipient', sender_user_id: 'guild:sender', amount: 4, note: 'gift' }], []]);
       }
       if (sql === 'INSERT IGNORE INTO coin_wallets (user_id) VALUES (?)') {
         return Promise.resolve([{}, []]);
       }
       if (sql.includes('FROM coin_wallets WHERE user_id = ? FOR UPDATE')) {
         const userId = (params as string[])[0];
-        if (userId === 'sender') {
+        if (userId === 'sender' || userId === 'guild:sender') {
           return Promise.resolve([[{ user_id: 'sender', available_balance: 5, locked_balance: 4 }], []]);
         }
         return Promise.resolve([[{ user_id: 'recipient', available_balance: 1, locked_balance: 0 }], []]);
@@ -654,11 +654,11 @@ describe('coin exchange deep tests', () => {
 
     expect(execute).toHaveBeenCalledWith(
       'UPDATE coin_wallets SET locked_balance = ? WHERE user_id = ?',
-      [0, 'sender']
+      [0, 'guild:sender']
     );
     expect(execute).toHaveBeenCalledWith(
       'UPDATE coin_wallets SET available_balance = ? WHERE user_id = ?',
-      [5, 'recipient']
+      [5, 'guild:recipient']
     );
     expect(commit).toHaveBeenCalledTimes(1);
     expect(rollback).not.toHaveBeenCalled();
@@ -678,12 +678,12 @@ describe('coin exchange deep tests', () => {
 
     const execute = jest.fn().mockImplementation((sql: string, params?: unknown[]) => {
       if (sql.includes('FROM coin_exchange_offers WHERE id = ? FOR UPDATE')) {
-        return Promise.resolve([[{ id: 13, status: 'open', recipient_user_id: 'recipient', sender_user_id: 'sender', amount: 2, note: null }], []]);
+        return Promise.resolve([[{ id: 13, status: 'open', recipient_user_id: 'guild:recipient', sender_user_id: 'guild:sender', amount: 2, note: null }], []]);
       }
       if (sql === 'INSERT IGNORE INTO coin_wallets (user_id) VALUES (?)') return Promise.resolve([{}, []]);
       if (sql.includes('FROM coin_wallets WHERE user_id = ? FOR UPDATE')) {
         const userId = (params as string[])[0];
-        if (userId === 'sender') return Promise.resolve([[{ user_id: 'sender', available_balance: 5, locked_balance: 2 }], []]);
+        if (userId === 'sender' || userId === 'guild:sender') return Promise.resolve([[{ user_id: 'sender', available_balance: 5, locked_balance: 2 }], []]);
         return Promise.resolve([[{ user_id: 'recipient', available_balance: 0, locked_balance: 0 }], []]);
       }
       return Promise.resolve([{}, []]);
@@ -695,7 +695,7 @@ describe('coin exchange deep tests', () => {
 
     expect(execute).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO coin_exchange_transactions'),
-      expect.arrayContaining(['recipient', 'sender', 'credit', 'offer_accept', 2, 2, 13, 'Offer accepted'])
+      expect.arrayContaining(['guild:recipient', 'guild:sender', 'credit', 'offer_accept', 2, 2, 13, 'Offer accepted'])
     );
   });
 
