@@ -63,10 +63,33 @@ All games are restricted to the #coin-exchange-payed-games channel.
 ## Getting Started
 - Clone the repo
 - Set your `DISCORD_TOKEN` in `.env`
+- Set `OWNER_DISCORD_USER_ID` in `.env` to enable owner/admin command controls
 - Set `DISCORD_GAME_DB_HOST`, `DISCORD_GAME_DB_PORT`, `DISCORD_GAME_DB_USER`, `DISCORD_GAME_DB_PASS`, and `DISCORD_GAME_DB_NAME` in `.env` if you want analytics, referrals, code storage, and audit logging enabled
+- Set `GAME_CHANNEL_ID` and `COIN_EXCHANGE_CHANNEL_ID` so commands are limited to approved channels
+- Set `API_AUTH_TOKEN` and `API_ADMIN_ID` before enabling API consumers
 - Run `npm install`
 - Run `npm run db:init` to create the required MySQL tables
 - Run `npm run dev` or `npm run start`
+
+## Coin Exchange Commands
+- `!exchange help`
+- `!exchange wallet`
+- `!exchange send @user amount`
+- `!exchange offer @user amount optional note`
+- `!exchange offers`
+- `!exchange accept offerId`
+- `!exchange cancel offerId`
+- `!exchange history`
+- `!exchange grant @user amount` (admin only)
+
+## Robustness and Compliance Checklist
+- Keep all bot/game commands channel-restricted using `GAME_CHANNEL_ID` and `COIN_EXCHANGE_CHANNEL_ID`
+- Use cooldown controls (`COMMAND_COOLDOWN_MS`, `EXCHANGE_COMMAND_COOLDOWN_MS`) to reduce spam and rate-limit pressure
+- Never commit secrets (`DISCORD_TOKEN`, DB password, API token)
+- Keep audit logging enabled for sensitive actions (grants, transfers, offer lifecycle)
+- Keep features entertainment-only and do not support real-money gambling flows
+- Respect Discord API rate limits and Terms of Service
+- Respect GitHub Terms and avoid automations that violate repository or account policies
 
 ## Commands
 - `!coinflip` — Flip a coin
