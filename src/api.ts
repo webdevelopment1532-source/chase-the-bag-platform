@@ -20,6 +20,12 @@ const ALLOWED_GAMES = new Set(['coinflip', 'dice', 'roulette', 'crash', 'blackja
 const ALLOWED_AFFILIATE_STATUSES = new Set(['pending', 'active', 'removed']);
 const ALLOWED_OFFER_STATUSES = new Set(['open', 'accepted', 'cancelled']);
 
+function getServerScope(value: unknown) {
+  if (typeof value !== 'string') return 'global';
+  const trimmed = value.trim();
+  return trimmed || 'global';
+}
+
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 120,
@@ -258,7 +264,8 @@ app.get('/api/overview', async (_req, res) => {
 app.get('/api/exchange/overview', sensitiveLimiter, async (req, res) => {
   try {
     await auditApiAccess('api_view_coin_exchange_overview', req);
-    const overview = await getCoinExchangeOverview();
+    const serverId = getServerScope(req.query.serverId);
+    const overview = await getCoinExchangeOverview(serverId);
     res.json(overview);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -270,7 +277,8 @@ app.get('/api/exchange/wallets', sensitiveLimiter, async (req, res) => {
   try {
     await auditApiAccess('api_view_coin_exchange_wallets', req);
     const limit = getLimit(req.query.limit, 50, 500);
-    const wallets = await listCoinWallets(limit);
+    const serverId = getServerScope(req.query.serverId);
+    const wallets = await listCoinWallets(limit, serverId);
     res.json(wallets);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -282,12 +290,13 @@ app.get('/api/exchange/offers', sensitiveLimiter, async (req, res) => {
   try {
     await auditApiAccess('api_view_coin_exchange_offers', req);
     const limit = getLimit(req.query.limit, 50, 500);
+    const serverId = getServerScope(req.query.serverId);
     const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
     if (status && !ALLOWED_OFFER_STATUSES.has(status.toLowerCase())) {
       res.status(400).json({ error: 'Invalid offer status filter.' });
       return;
     }
-    const offers = await listCoinOffers(limit, status);
+    const offers = await listCoinOffers(limit, status, serverId);
     res.json(offers);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -299,8 +308,9 @@ app.get('/api/exchange/transactions', sensitiveLimiter, async (req, res) => {
   try {
     await auditApiAccess('api_view_coin_exchange_transactions', req);
     const limit = getLimit(req.query.limit, 100, 500);
+    const serverId = getServerScope(req.query.serverId);
     const userId = typeof req.query.userId === 'string' ? req.query.userId.trim() : '';
-    const transactions = await listCoinTransactions(limit, userId);
+    const transactions = await listCoinTransactions(limit, userId, serverId);
     res.json(transactions);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

@@ -25,8 +25,17 @@ describe('api helpers and routes', () => {
     getRagIndex?: jest.Mock;
     answerWithContext?: jest.Mock;
     queryRag?: jest.Mock;
+    scrapeStakeCodes?: jest.Mock;
   }) {
     jest.resetModules();
+
+    // Keep tests deterministic by preventing dotenv from mutating process.env during module import.
+    const dotenvConfig = jest.fn();
+    jest.doMock('dotenv', () => ({
+      __esModule: true,
+      default: { config: dotenvConfig },
+      config: dotenvConfig,
+    }));
 
     const dbExecute = overrides?.dbExecute ?? jest.fn().mockResolvedValue([[], []]);
     const dbEnd = jest.fn().mockResolvedValue(undefined);
@@ -52,6 +61,10 @@ describe('api helpers and routes', () => {
       getRagIndex: overrides?.getRagIndex ?? jest.fn().mockResolvedValue({ chunksIndexed: 3 }),
       answerWithContext: overrides?.answerWithContext ?? jest.fn().mockResolvedValue({ answer: 'ok' }),
       queryRag: overrides?.queryRag ?? jest.fn().mockResolvedValue({ results: [] }),
+    }));
+
+    jest.doMock('../src/scraper', () => ({
+      scrapeStakeCodes: overrides?.scrapeStakeCodes ?? jest.fn().mockResolvedValue([]),
     }));
 
     const api = await import('../src/api');
@@ -456,9 +469,9 @@ describe('api helpers and routes', () => {
     expect(wallets.json).toEqual([{ userId: 'wallet-1' }]);
     expect(offers.json).toEqual([{ id: 9, status: 'open' }]);
     expect(transactions.json).toEqual([{ id: 5, userId: 'u1' }]);
-    expect(listCoinWallets).toHaveBeenCalledWith(1);
-    expect(listCoinOffers).toHaveBeenCalledWith(500, 'open');
-    expect(listCoinTransactions).toHaveBeenCalledWith(3, 'user-1');
+    expect(listCoinWallets).toHaveBeenCalledWith(1, 'global');
+    expect(listCoinOffers).toHaveBeenCalledWith(500, 'open', 'global');
+    expect(listCoinTransactions).toHaveBeenCalledWith(3, 'user-1', 'global');
   });
 
   test('exchange routes return 500 when integrations fail', async () => {
@@ -561,6 +574,86 @@ describe('api helpers and routes', () => {
 
     expect(response.status).toBe(400);
     expect(response.json).toEqual({ error: 'Missing query parameter.' });
+  });
+
+  test('scraper run route returns success payload with sample codes', async () => {
+    const scrapeStakeCodes = jest.fn().mockResolvedValue(['A1', 'B2', 'C3', 'D4']);
+    const { api } = await loadApiModule({ scrapeStakeCodes });
+
+    const response = await makeRequest(api.app, '/api/scraper/run', {
+      method: 'POST',
+      body: {},
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.json).toEqual(
+      expect.objectContaining({
+        ok: true,
+        count: 4,
+        sample: ['A1', 'B2', 'C3'],
+        message: 'Scraper completed: 4 codes found',
+        timestamp: expect.any(String),
+      })
+    );
+    expect(scrapeStakeCodes).toHaveBeenCalledTimes(1);
+  });
+
+  test('scraper run route returns 500 on scraper failure', async () => {
+    const { api } = await loadApiModule({
+      scrapeStakeCodes: jest.fn().mockRejectedValue(new Error('scraper failed')),
+    });
+
+    const response = await makeRequest(api.app, '/api/scraper/run', {
+      method: 'POST',
+      body: {},
+    });
+
+    expect(response.status).toBe(500);
+    expect(response.json).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: 'scraper failed',
+        timestamp: expect.any(String),
+      })
+    );
+  });
+
+  test('scraper status route returns totals and recent codes', async () => {
+    const execute = jest
+      .fn()
+      .mockResolvedValueOnce([[{ total: 2 }], []])
+      .mockResolvedValueOnce([[{ code: 'A1', source: 'stake.us', created_at: '2026-04-02T00:00:00.000Z' }], []]);
+    const { api, dbEnd } = await loadApiModule({ dbExecute: execute });
+
+    const response = await makeRequest(api.app, '/api/scraper/status');
+
+    expect(response.status).toBe(200);
+    expect(response.json).toEqual(
+      expect.objectContaining({
+        ok: true,
+        totalCodes: 2,
+        recentCodes: [{ code: 'A1', source: 'stake.us', created_at: '2026-04-02T00:00:00.000Z' }],
+        timestamp: expect.any(String),
+      })
+    );
+    expect(dbEnd).toHaveBeenCalledTimes(1);
+  });
+
+  test('scraper status route returns 500 when db query fails', async () => {
+    const { api } = await loadApiModule({
+      dbExecute: jest.fn().mockRejectedValue(new Error('status failed')),
+    });
+
+    const response = await makeRequest(api.app, '/api/scraper/status');
+
+    expect(response.status).toBe(500);
+    expect(response.json).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: 'status failed',
+        timestamp: expect.any(String),
+      })
+    );
   });
 
   test('leaderboard route returns 500 on db failure', async () => {

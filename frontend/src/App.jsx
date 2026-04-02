@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
-const TABS = ['Overview', 'Stake Games', 'Coin Exchange', 'Leaderboard', 'Affiliates', 'Codes', 'Audit Log']
+const TABS = ['Overview', 'Casino Games', 'Coin Exchange', 'Leaderboard', 'Affiliates', 'Codes', 'Audit Log']
 const API_TOKEN = import.meta.env.VITE_API_AUTH_TOKEN || ''
 const API_ADMIN_ID = import.meta.env.VITE_API_ADMIN_ID || 'dashboard-admin'
 
@@ -419,7 +419,7 @@ function App() {
   const views = {
     Overview: <DashboardView refreshToken={refreshToken} />,
     'Coin Exchange': <ExchangeView refreshToken={refreshToken} search={search} />,
-    'Stake Games': <GamesView refreshToken={refreshToken} search={search} gameFilter={gameFilter} />,
+    'Casino Games': <GamesView refreshToken={refreshToken} search={search} gameFilter={gameFilter} />,
     Leaderboard: <LeaderboardView refreshToken={refreshToken} search={search} />,
     Affiliates: <AffiliatesView refreshToken={refreshToken} search={search} statusFilter={statusFilter} />,
     Codes: <CodesView refreshToken={refreshToken} search={search} />,

@@ -21,5 +21,17 @@
 - Never commit secrets or sensitive data.
 - Report vulnerabilities to the core team immediately.
 
+## Platform Compliance
+- All bot behavior must remain compliant with Discord Terms of Service and Community Guidelines.
+- All repository activity must remain compliant with GitHub Terms and Acceptable Use policies.
+- Features must remain entertainment-only and must not enable real-money gambling flows.
+- New integrations must include rate-limit protections, auditability, and abuse controls before merge.
+
+## Release Gate
+- Required before merge: `npm run build`
+- Required before merge: `npm test -- --runInBand`
+- Required for robustness sweeps: `npm run stryker:sandbox`
+- Required for runtime verification: `npm run monitor:stack`
+
 ## Contact
 - For questions or access requests, contact the project owner or a core team member.
