@@ -258,8 +258,7 @@ export async function queryRag(query: string, topK = 5, rootDir = process.cwd())
   const scored = cachedIndex.chunks
     .map((chunk) => {
       const dot = dotProduct(queryVector, chunk.terms);
-      const denom = queryNorm * (chunk.norm || 1);
-      const score = denom === 0 ? 0 : dot / denom;
+      const score = dot / (queryNorm * chunk.norm);
       return {
         id: chunk.id,
         sourcePath: chunk.sourcePath,
