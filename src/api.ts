@@ -4,6 +4,8 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { getDbConnection } from './db';
 import { logOperation } from './audit-log';
+import { getCoinExchangeOverview, listCoinOffers, listCoinTransactions, listCoinWallets } from './coin-exchange';
+import { answerWithContext, getRagIndex, queryRag } from './rag';
 
 dotenv.config();
 
@@ -15,6 +17,7 @@ const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN ?? '';
 const API_ADMIN_ID = process.env.API_ADMIN_ID ?? 'dashboard-admin';
 const ALLOWED_GAMES = new Set(['coinflip', 'dice', 'roulette', 'crash', 'blackjack', 'slots', 'plinko', 'mines']);
 const ALLOWED_AFFILIATE_STATUSES = new Set(['pending', 'active', 'removed']);
+const ALLOWED_OFFER_STATUSES = new Set(['open', 'accepted', 'cancelled']);
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -245,6 +248,107 @@ app.get('/api/overview', async (_req, res) => {
       dailyGames: dailyRows,
       lastUpdated: new Date().toISOString(),
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Coin exchange overview ---
+app.get('/api/exchange/overview', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_view_coin_exchange_overview', req);
+    const overview = await getCoinExchangeOverview();
+    res.json(overview);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Coin exchange wallets ---
+app.get('/api/exchange/wallets', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_view_coin_exchange_wallets', req);
+    const limit = getLimit(req.query.limit, 50, 500);
+    const wallets = await listCoinWallets(limit);
+    res.json(wallets);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Coin exchange offers ---
+app.get('/api/exchange/offers', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_view_coin_exchange_offers', req);
+    const limit = getLimit(req.query.limit, 50, 500);
+    const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+    if (status && !ALLOWED_OFFER_STATUSES.has(status.toLowerCase())) {
+      res.status(400).json({ error: 'Invalid offer status filter.' });
+      return;
+    }
+    const offers = await listCoinOffers(limit, status);
+    res.json(offers);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Coin exchange transactions ---
+app.get('/api/exchange/transactions', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_view_coin_exchange_transactions', req);
+    const limit = getLimit(req.query.limit, 100, 500);
+    const userId = typeof req.query.userId === 'string' ? req.query.userId.trim() : '';
+    const transactions = await listCoinTransactions(limit, userId);
+    res.json(transactions);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- RAG index status ---
+app.get('/api/rag/index', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_view_rag_index', req);
+    const refresh = String(req.query.refresh ?? '').toLowerCase() === 'true';
+    const stats = await getRagIndex(refresh);
+    res.json({ ok: true, stats });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- RAG query ---
+app.post('/api/rag/query', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_query_rag', req);
+    const query = typeof req.body?.query === 'string' ? req.body.query.trim() : '';
+    if (!query) {
+      res.status(400).json({ error: 'Missing query string in request body.' });
+      return;
+    }
+
+    const topK = getLimit(req.body?.topK, 5, 10);
+    const response = await answerWithContext(query, topK);
+    res.json(response);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- RAG retrieval (raw chunks) ---
+app.get('/api/rag/retrieve', sensitiveLimiter, async (req, res) => {
+  try {
+    await auditApiAccess('api_retrieve_rag', req);
+    const query = typeof req.query.query === 'string' ? req.query.query.trim() : '';
+    if (!query) {
+      res.status(400).json({ error: 'Missing query parameter.' });
+      return;
+    }
+
+    const topK = getLimit(req.query.topK, 5, 10);
+    const response = await queryRag(query, topK);
+    res.json(response);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
