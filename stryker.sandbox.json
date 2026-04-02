@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-schema.json",
-  "description": "Strict sandbox configuration for isolated mutation testing with zero state leakage",
+  "description_comment": "Strict sandbox configuration for isolated mutation testing with zero state leakage",
   "testRunner": "jest",
   "coverageAnalysis": "off",
   "reporters": ["html", "clear-text", "progress"],
@@ -21,9 +21,5 @@
     "high": 100,
     "low": 100,
     "break": 100
-  },
-  "mutatorDesc": {
-    "plugins": ["javascript", "typescript"],
-    "excludedMutations": []
   }
 }
