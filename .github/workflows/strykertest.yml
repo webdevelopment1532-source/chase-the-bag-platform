@@ -9,6 +9,7 @@ on:
 jobs:
   mutation-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -22,3 +23,10 @@ jobs:
         run: npm test -- --runInBand
       - name: Run Stryker Mutation Tests
         run: npm run stryker
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: reports/mutation
+          if-no-files-found: ignore
