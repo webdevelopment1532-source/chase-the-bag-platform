@@ -9,7 +9,7 @@ import { answerWithContext, getRagIndex, queryRag } from './rag';
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 app.use(cors());
 app.use(express.json());
 
@@ -35,7 +35,7 @@ const sensitiveLimiter = rateLimit({
   message: { error: 'Too many requests to sensitive endpoint. Please retry shortly.' },
 });
 
-function getProvidedToken(req: express.Request) {
+export function getProvidedToken(req: express.Request) {
   const authHeader = req.header('authorization') ?? '';
   if (authHeader.toLowerCase().startsWith('bearer ')) {
     return authHeader.slice(7).trim();
@@ -43,7 +43,7 @@ function getProvidedToken(req: express.Request) {
   return req.header('x-api-key')?.trim() ?? '';
 }
 
-function authenticateApi(req: express.Request, res: express.Response, next: express.NextFunction) {
+export function authenticateApi(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (!API_AUTH_TOKEN) {
     res.status(503).json({ error: 'API authentication is not configured on server.' });
     return;
@@ -58,7 +58,7 @@ function authenticateApi(req: express.Request, res: express.Response, next: expr
   next();
 }
 
-async function auditApiAccess(action: string, req: express.Request) {
+export async function auditApiAccess(action: string, req: express.Request) {
   try {
     const actor = req.header('x-admin-user')?.trim() || API_ADMIN_ID;
     await logOperation({
@@ -74,7 +74,7 @@ async function auditApiAccess(action: string, req: express.Request) {
 
 app.use('/api', apiLimiter, authenticateApi);
 
-function getLimit(input: unknown, fallback: number, max: number) {
+export function getLimit(input: unknown, fallback: number, max: number) {
   const parsed = Number(input);
   if (!Number.isFinite(parsed)) return fallback;
   if (parsed < 1) return 1;
