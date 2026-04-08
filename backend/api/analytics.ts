@@ -1,5 +1,4 @@
 // Example analytics endpoint with correct TypeScript typing
-import { NextApiRequest, NextApiResponse } from 'next';
 
 // Simulated async DB query function
 async function query(sql: string): Promise<any[]> {
@@ -7,16 +6,17 @@ async function query(sql: string): Promise<any[]> {
   return [{ count: Math.floor(Math.random() * 100) }];
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const tables = ['users', 'transactions', 'offers'];
+export default async function handler(req: any, res: any) {
+  const tables = ["users", "transactions", "offers"];
   // Explicitly type stats to avoid any TS ambiguity
   const stats: Record<string, number | string> = Object.create(null);
 
   for (const table of tables) {
     try {
-      stats[table] = (await query(`SELECT COUNT(*) as count FROM ${table}`))[0]?.count || 0;
+      stats[table] =
+        (await query(`SELECT COUNT(*) as count FROM ${table}`))[0]?.count || 0;
     } catch (err) {
-      stats[table] = 'error';
+      stats[table] = "error";
     }
   }
 
