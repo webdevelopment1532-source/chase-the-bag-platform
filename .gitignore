@@ -1,0 +1,40 @@
+# Project root .gitignore
+node_modules/
+dist/
+.env
+.env.*
+coverage/
+logs/
+.DS_Store
+*.log
+# Ignore build artifacts
+*.tsbuildinfo
+# Ignore local IDE/editor files
+.vscode/
+.idea/
+*.swp
+node_modules
+# Build outputs
+dist/
+# Environment files
+.env
+.env.*
+# Coverage
+coverage/
+# Test and mutation temp files
+.stryker-tmp/
+stryker-tmp/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# IDE/editor
+.vscode/
+.idea/
+.DS_Store
+# OS
+Thumbs.db
+# Reports
+reports/
+# Misc
+*.local

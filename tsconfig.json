@@ -10,7 +10,8 @@
     "rootDir": ".",
     "allowJs": true,
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "jsx": "react-jsx"
   },
   "include": ["src", "test"]
 }
