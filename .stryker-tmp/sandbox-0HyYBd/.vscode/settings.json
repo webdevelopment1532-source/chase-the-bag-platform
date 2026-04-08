@@ -1,0 +1,9 @@
+{
+  "files.exclude": {
+    "**/.stryker-tmp": false,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/reports": false,
+    "**/coverage": false
+  }
+}
