@@ -1,13 +1,23 @@
 // Audit log for all payout, code, and user operations
 // Only logs actions for users and Discord servers on this bot
-import { getDbConnection } from './db';
+import { getDbConnection } from "./db";
 
-export async function logOperation({ userId, serverId, action, details }: { userId: string, serverId: string, action: string, details?: string }) {
+export async function logOperation({
+  userId,
+  serverId,
+  action,
+  details,
+}: {
+  userId: string;
+  serverId: string;
+  action: string;
+  details?: string;
+}) {
   const db = await getDbConnection();
   try {
     await db.execute(
-      'INSERT INTO audit_logs (user_id, server_id, action, details) VALUES (?, ?, ?, ?)',
-      [userId, serverId, action, details || null]
+      "INSERT INTO audit_logs (user_id, server_id, action, details) VALUES (?, ?, ?, ?)",
+      [userId, serverId, action, details || null],
     );
   } finally {
     await db.end();

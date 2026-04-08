@@ -1,48 +1,29 @@
 {
   "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "search.exclude": {
-    ".stryker-tmp": true,
-    ".stryker-sandbox": true,
-    ".stryker-sandbox-tmp": true,
-    "reports/mutation-sandbox": true,
-    "dist": true,
-    "coverage": true
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": true
   },
   "files.exclude": {
-    ".stryker-tmp": true,
-    ".stryker-sandbox": true,
-    ".stryker-sandbox-tmp": true
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.stryker-tmp": true
   },
-  "files.watcherExclude": {
-    ".stryker-tmp/**": true,
-    ".stryker-sandbox/**": true,
-    ".stryker-sandbox-tmp/**": true,
-    "reports/mutation-sandbox/**": true
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+  "jest.enableCodeLens": true,
+  "jest.autoRun": {
+    "watch": true,
+    "onSave": "test-file"
   },
-  "files.associations": {
-    "**/.github/workflows/secret-scan.yml": "yaml"
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.stryker-tmp": true
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "typescript.preferences.quotePreference": "single",
-  "typescript.preferences.importModuleSpecifierPreference": "shortest",
-  "github.copilot.enable": {
-    "*": true,
-    "yaml": false,
-    "plaintext": false
-  },
-  "testing.automaticallyOpenPeekView": "failureInVisibleDocument"
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }

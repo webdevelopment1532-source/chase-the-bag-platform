@@ -1,21 +1,38 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/test', '<rootDir>/tests'],
-  clearMocks: true,
-  resetMocks: true,
-  restoreMocks: true,
-  resetModules: true,
-  forceExit: true,
-  testTimeout: 30000,
-  moduleNameMapper: {
-    '^node-fetch$': '<rootDir>/test/__mocks__/node-fetch.js',
-  },
-  collectCoverage: true,
-  collectCoverageFrom: [
-    'src/**/*.{ts,js}',
-    '!src/**/*.d.ts',
+export default {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  testMatch: ["<rootDir>/test/**/*.test.ts"],
+  moduleDirectories: ["node_modules", "src", "<rootDir>/src", "<rootDir>"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    "/coverage/",
+    "/.stryker-tmp/",
+    "/stryker-tmp/",
+    ".*.js$",
+    ".*.d.ts$",
   ],
-  coverageDirectory: 'coverage',
-  coveragePathIgnorePatterns: ['/node_modules/'],
+  coverageDirectory: "<rootDir>/coverage/jest-coverage",
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    "/coverage/",
+    "/.stryker-tmp/",
+    "/stryker-tmp/",
+  ],
+  reporters: [
+    "default",
+    [
+      "jest-junit",
+      {
+        outputDirectory: "<rootDir>/coverage/jest-results",
+        outputName: "junit.xml",
+      },
+    ],
+  ],
+  moduleNameMapper: {
+    "^src/(.*)$": "<rootDir>/src/$1",
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
 };
