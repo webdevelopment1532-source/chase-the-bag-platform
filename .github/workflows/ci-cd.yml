@@ -1,0 +1,55 @@
+name: CI/CD Vercel + E2E + Perf
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+      DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+      DISCORD_REDIRECT_URI: ${{ secrets.DISCORD_REDIRECT_URI }}
+      REACT_APP_DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+      REACT_APP_DISCORD_REDIRECT_URI: ${{ secrets.DISCORD_REDIRECT_URI }}
+      NEXT_PUBLIC_DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+      NEXT_PUBLIC_DISCORD_REDIRECT_URI: ${{ secrets.DISCORD_REDIRECT_URI }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+      - name: Run E2E tests
+        run: |
+          npm install --save-dev cypress
+          npx cypress run --spec e2e/popup-discord-exchange.cy.js
+      - name: Run API performance tests
+        run: |
+          npm install --save-dev jest axios
+          npx jest e2e/api-performance.test.js
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: .
+          env: production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+          DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+          DISCORD_REDIRECT_URI: ${{ secrets.DISCORD_REDIRECT_URI }}

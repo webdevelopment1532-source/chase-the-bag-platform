@@ -1,0 +1,91 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Chase The Bag Platform Analytics",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Popup Impressions, Clicks, Dismissals",
+        "targets": [
+          {
+            "expr": "sum(rate(popup_impression_total[5m]))",
+            "legendFormat": "Impressions"
+          },
+          {
+            "expr": "sum(rate(popup_click_total[5m]))",
+            "legendFormat": "Clicks"
+          },
+          {
+            "expr": "sum(rate(popup_dismiss_total[5m]))",
+            "legendFormat": "Dismissals"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "stat",
+        "title": "Active Users (Discord vs Guest)",
+        "targets": [
+          {
+            "expr": "sum(popup_user_type{userType=\"discord\"})",
+            "legendFormat": "Discord"
+          },
+          {
+            "expr": "sum(popup_user_type{userType=\"guest\"})",
+            "legendFormat": "Guest"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "graph",
+        "title": "API Latency (ms)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(api_latency_bucket[5m])) by (le))",
+            "legendFormat": "95th Percentile"
+          },
+          {
+            "expr": "avg(rate(api_latency_sum[5m]) / rate(api_latency_count[5m]))",
+            "legendFormat": "Average"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 }
+      },
+      {
+        "type": "table",
+        "title": "Popup Engagement by User Segment",
+        "targets": [
+          {
+            "expr": "sum by (userType) (rate(popup_click_total[5m]))",
+            "legendFormat": "Clicks by Segment"
+          },
+          {
+            "expr": "sum by (userType) (rate(popup_impression_total[5m]))",
+            "legendFormat": "Impressions by Segment"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 }
+      },
+      {
+        "type": "stat",
+        "title": "Serverless Errors (Last 24h)",
+        "targets": [
+          {
+            "expr": "sum(increase(serverless_errors_total[24h]))",
+            "legendFormat": "Errors"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 }
+      }
+    ],
+    "schemaVersion": 36,
+    "version": 1,
+    "refresh": "10s"
+  }
+}
