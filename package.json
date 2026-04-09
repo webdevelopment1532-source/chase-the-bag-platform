@@ -54,6 +54,7 @@
     "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
+    "@vercel/node": "^4.0.0",
     "babel-jest": "^30.3.0",
     "concurrently": "^9.2.1",
     "eslint": "^9.7.0",

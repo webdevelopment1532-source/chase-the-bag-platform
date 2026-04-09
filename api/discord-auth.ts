@@ -1,15 +1,5 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import DiscordOauth2 from "discord-oauth2";
-import type { IncomingMessage, ServerResponse } from "http";
-type VercelRequest = IncomingMessage & {
-  body?: any;
-  query?: any;
-  cookies?: any;
-};
-type VercelResponse = ServerResponse & {
-  status: (code: number) => VercelResponse;
-  json: (body: any) => void;
-  end: (body?: any) => void;
-};
 
 const oauth = new DiscordOauth2({
   clientId: process.env.DISCORD_CLIENT_ID!,
@@ -18,10 +8,17 @@ const oauth = new DiscordOauth2({
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  try {
-    const code = req.query.code as string;
-    if (!code) return res.status(400).json({ error: "Missing code" });
+  // Only allow GET requests for OAuth callback
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
+  const code = req.query["code"];
+  if (!code || typeof code !== "string") {
+    return res.status(400).json({ error: "Missing code" });
+  }
+
+  try {
     // Exchange code for token
     const token = await oauth.tokenRequest({
       code,
@@ -32,9 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Fetch user info
     const user = await oauth.getUser(token.access_token);
 
-    res.status(200).json({ user });
+    return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "OAuth failed" });
+    return res.status(500).json({ error: "OAuth failed" });
   }
 }
