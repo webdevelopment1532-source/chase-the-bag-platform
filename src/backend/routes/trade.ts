@@ -5,7 +5,7 @@ import {
   validateTradeAcceptInput,
   validateTradeConfirmInput,
 } from "../validation/trade";
-import * as auditLog from "../../audit-log";
+import { logOperation } from "../../audit-log";
 // Use TypeScript wrapper for audit-log
 // import * as auditLog from '../../audit-log';
 // import { logOperation } from '../../audit-log';
@@ -42,11 +42,11 @@ export async function tradeRoutes(fastify: FastifyInstance) {
     const updateOfferQuery = 'UPDATE offers SET status="ACCEPTED" WHERE id=?';
     detectAnomaly(updateOfferQuery, [offerId], { userId: buyerId, ip: req.ip });
     await getDbPool().execute(updateOfferQuery, [offerId]);
-    auditLog.logOperation({
+    logOperation({
       userId: buyerId,
       serverId: "",
       action: "trade_accept",
-      details: `offerId=${offerId}, sellerId=${offer.user_id}, btcLocked=${offer.btc_amount}, fee=${fee}, tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
+      details: `Accepted trade. offerId=${offerId}, sellerId=${offer.user_id}, btcLocked=${offer.btc_amount}, fee=${fee}, tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
     });
     return { tradeId };
   });
@@ -60,11 +60,11 @@ export async function tradeRoutes(fastify: FastifyInstance) {
     const updateTradeQuery = 'UPDATE trades SET status="COMPLETED" WHERE id=?';
     detectAnomaly(updateTradeQuery, [tradeId], { ip: req.ip });
     await getDbPool().execute(updateTradeQuery, [tradeId]);
-    auditLog.logOperation({
+    logOperation({
       userId: "",
       serverId: "",
       action: "trade_confirm",
-      details: `tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
+      details: `Confirmed trade. tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
     });
     return { success: true };
   });

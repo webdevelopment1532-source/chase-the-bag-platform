@@ -39,9 +39,16 @@ export function detectAnomaly(
       userId: context.userId || "",
       serverId: "",
       action: "anomaly_detected",
-      details: `query=${query}, params=${JSON.stringify(safeParams)}, ip=${context.ip}, timestamp=${new Date().toISOString()}, flagged=${flagged}`,
+      details: `Anomaly detected. query=${query}, params=${JSON.stringify(safeParams)}, ip=${context.ip}, timestamp=${new Date().toISOString()}, flagged=${flagged}`,
+      ip: context.ip,
+      timestamp: new Date().toISOString(),
     };
-    auditLog.logOperation(event);
+    auditLog.logOperation({
+      userId: event.userId,
+      serverId: event.serverId,
+      action: event.action,
+      details: event.details,
+    });
     // Real-time alerting hook
     sendSecurityAlert(event);
     // Forward to SIEM

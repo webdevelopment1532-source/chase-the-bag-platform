@@ -61,7 +61,7 @@ async function offerRoutes(fastify) {
             userId,
             serverId: "",
             action: "offer_create",
-            details: `btcAmount=${btcAmount}, usdAmount=${usdAmount}, offerId=${id}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
+            details: `Created offer. btcAmount=${btcAmount}, usdAmount=${usdAmount}, offerId=${id}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
         });
         return { id };
     });
