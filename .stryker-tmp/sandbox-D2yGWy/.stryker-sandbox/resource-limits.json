@@ -1,6 +1,0 @@
-{
-  "maxOldSpaceSize": "--max-old-space-size=2048",
-  "heapSizeLimit": "Default Node.js heap",
-  "isolateProcesses": true,
-  "processPerMutation": true
-}
