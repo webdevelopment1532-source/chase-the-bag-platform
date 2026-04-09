@@ -1,281 +1,281 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="129" failures="0" errors="0" time="16.553">
-  <testsuite name="platform utility modules" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="9.618" tests="10">
-    <testcase classname="platform utility modules getPlatformAnalytics aggregates db counts correctly" name="platform utility modules getPlatformAnalytics aggregates db counts correctly" time="0.03">
+<testsuites name="jest tests" tests="129" failures="0" errors="0" time="16.687">
+  <testsuite name="export-data deep tests" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:27" time="10.194" tests="2">
+    <testcase classname="export-data deep tests exportAllDataZip exports all tables and returns custom output path" name="export-data deep tests exportAllDataZip exports all tables and returns custom output path" time="0.06">
     </testcase>
-    <testcase classname="platform utility modules checkFraudulentActivity returns no alerts for low activity" name="platform utility modules checkFraudulentActivity returns no alerts for low activity" time="0.008">
-    </testcase>
-    <testcase classname="platform utility modules checkFraudulentActivity returns both alerts for high activity" name="platform utility modules checkFraudulentActivity returns both alerts for high activity" time="0.007">
-    </testcase>
-    <testcase classname="platform utility modules checkFraudulentActivity does not alert at exact threshold values" name="platform utility modules checkFraudulentActivity does not alert at exact threshold values" time="0.003">
-    </testcase>
-    <testcase classname="platform utility modules checkFraudulentActivity handles empty aggregate rows without throwing" name="platform utility modules checkFraudulentActivity handles empty aggregate rows without throwing" time="0.003">
-    </testcase>
-    <testcase classname="platform utility modules getChartUrl returns encoded quickchart URL" name="platform utility modules getChartUrl returns encoded quickchart URL" time="0.005">
-    </testcase>
-    <testcase classname="platform utility modules getChartUrl uses default title when omitted" name="platform utility modules getChartUrl uses default title when omitted" time="0.002">
-    </testcase>
-    <testcase classname="platform utility modules getPersonalizedOffer covers tier branches" name="platform utility modules getPersonalizedOffer covers tier branches" time="0.005">
-    </testcase>
-    <testcase classname="platform utility modules referral helpers return leaderboard and user count" name="platform utility modules referral helpers return leaderboard and user count" time="0.009">
-    </testcase>
-    <testcase classname="platform utility modules getVirtualBoardData logs only when user and server are provided" name="platform utility modules getVirtualBoardData logs only when user and server are provided" time="0.008">
+    <testcase classname="export-data deep tests exportAllDataZip uses default path when omitted" name="export-data deep tests exportAllDataZip uses default path when omitted" time="0.008">
     </testcase>
   </testsuite>
-  <testsuite name="Security Setup" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="10.958" tests="1">
-    <testcase classname="Security Setup No token in codebase" name="Security Setup No token in codebase" time="0.034">
+  <testsuite name="db" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:26" time="10.681" tests="4">
+    <testcase classname="db throws when required env vars are missing" name="db throws when required env vars are missing" time="0.096">
+    </testcase>
+    <testcase classname="db uses DISCORD_GAME_DB_* values with default port 3306" name="db uses DISCORD_GAME_DB_* values with default port 3306" time="0.015">
+    </testcase>
+    <testcase classname="db falls back to DB_* values and parses DB_PORT" name="db falls back to DB_* values and parses DB_PORT" time="0.01">
+    </testcase>
+    <testcase classname="db DISCORD_GAME_DB values take precedence over DB_* fallback" name="db DISCORD_GAME_DB values take precedence over DB_* fallback" time="0.008">
     </testcase>
   </testsuite>
-  <testsuite name="Games" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="10.867" tests="26">
-    <testcase classname="Games game functions use default random source when omitted" name="Games game functions use default random source when omitted" time="0.052">
+  <testsuite name="Games" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:26" time="11.389" tests="26">
+    <testcase classname="Games game functions use default random source when omitted" name="Games game functions use default random source when omitted" time="0.036">
     </testcase>
-    <testcase classname="Games blackjack includes player, dealer, and result lines" name="Games blackjack includes player, dealer, and result lines" time="0.004">
+    <testcase classname="Games blackjack includes player, dealer, and result lines" name="Games blackjack includes player, dealer, and result lines" time="0.006">
     </testcase>
     <testcase classname="Games blackjack draws additional cards for low totals" name="Games blackjack draws additional cards for low totals" time="0.005">
     </testcase>
-    <testcase classname="Games blackjack returns push for equal final totals" name="Games blackjack returns push for equal final totals" time="0.004">
+    <testcase classname="Games blackjack returns push for equal final totals" name="Games blackjack returns push for equal final totals" time="0.038">
     </testcase>
-    <testcase classname="Games blackjack returns dealer wins when dealer total beats player" name="Games blackjack returns dealer wins when dealer total beats player" time="0.003">
+    <testcase classname="Games blackjack returns dealer wins when dealer total beats player" name="Games blackjack returns dealer wins when dealer total beats player" time="0.004">
     </testcase>
-    <testcase classname="Games blackjack returns dealer wins when player busts" name="Games blackjack returns dealer wins when player busts" time="0.003">
+    <testcase classname="Games blackjack returns dealer wins when player busts" name="Games blackjack returns dealer wins when player busts" time="0.001">
     </testcase>
-    <testcase classname="Games blackjack returns player wins when dealer busts" name="Games blackjack returns player wins when dealer busts" time="0.003">
+    <testcase classname="Games blackjack returns player wins when dealer busts" name="Games blackjack returns player wins when dealer busts" time="0.002">
     </testcase>
-    <testcase classname="Games blackjack correctly adjusts ace value to avoid bust" name="Games blackjack correctly adjusts ace value to avoid bust" time="0.002">
+    <testcase classname="Games blackjack correctly adjusts ace value to avoid bust" name="Games blackjack correctly adjusts ace value to avoid bust" time="0.003">
     </testcase>
     <testcase classname="Games blackjack includes every rank symbol when drawn" name="Games blackjack includes every rank symbol when drawn" time="0.003">
     </testcase>
-    <testcase classname="Games blackjack keeps ace at 11 for natural 21" name="Games blackjack keeps ace at 11 for natural 21" time="0.002">
+    <testcase classname="Games blackjack keeps ace at 11 for natural 21" name="Games blackjack keeps ace at 11 for natural 21" time="0.004">
     </testcase>
-    <testcase classname="Games blackjack does not hit when player total is exactly 16" name="Games blackjack does not hit when player total is exactly 16" time="0.004">
+    <testcase classname="Games blackjack does not hit when player total is exactly 16" name="Games blackjack does not hit when player total is exactly 16" time="0.001">
     </testcase>
-    <testcase classname="Games blackjack does not hit when dealer total is exactly 17" name="Games blackjack does not hit when dealer total is exactly 17" time="0.002">
+    <testcase classname="Games blackjack does not hit when dealer total is exactly 17" name="Games blackjack does not hit when dealer total is exactly 17" time="0.001">
     </testcase>
-    <testcase classname="Games blackjack player wins by higher total when nobody busts" name="Games blackjack player wins by higher total when nobody busts" time="0.002">
+    <testcase classname="Games blackjack player wins by higher total when nobody busts" name="Games blackjack player wins by higher total when nobody busts" time="0.003">
     </testcase>
-    <testcase classname="Games blackjack keeps player bust when multiple aces and high cards are drawn" name="Games blackjack keeps player bust when multiple aces and high cards are drawn" time="0.002">
+    <testcase classname="Games blackjack keeps player bust when multiple aces and high cards are drawn" name="Games blackjack keeps player bust when multiple aces and high cards are drawn" time="0.005">
     </testcase>
-    <testcase classname="Games plinko reports a path, lane, and payout" name="Games plinko reports a path, lane, and payout" time="0.012">
+    <testcase classname="Games plinko reports a path, lane, and payout" name="Games plinko reports a path, lane, and payout" time="0.004">
     </testcase>
     <testcase classname="Games plinko stays within lane bounds for extreme left and right paths" name="Games plinko stays within lane bounds for extreme left and right paths" time="0.003">
     </testcase>
-    <testcase classname="Games plinko uses exactly six steps and maps 0.5 to right" name="Games plinko uses exactly six steps and maps 0.5 to right" time="0.007">
+    <testcase classname="Games plinko uses exactly six steps and maps 0.5 to right" name="Games plinko uses exactly six steps and maps 0.5 to right" time="0.003">
     </testcase>
-    <testcase classname="Games plinko mixed path validates starting position math" name="Games plinko mixed path validates starting position math" time="0.003">
+    <testcase classname="Games plinko mixed path validates starting position math" name="Games plinko mixed path validates starting position math" time="0.002">
     </testcase>
     <testcase classname="Games mines returns a bounded pick and a result" name="Games mines returns a bounded pick and a result" time="0.003">
     </testcase>
-    <testcase classname="Games mines does not hang when random repeats" name="Games mines does not hang when random repeats" time="0.003">
+    <testcase classname="Games mines does not hang when random repeats" name="Games mines does not hang when random repeats" time="0.009">
     </testcase>
     <testcase classname="Games mines safe path includes multiplier" name="Games mines safe path includes multiplier" time="0.002">
     </testcase>
-    <testcase classname="Games mines boom path includes boom result" name="Games mines boom path includes boom result" time="0.002">
+    <testcase classname="Games mines boom path includes boom result" name="Games mines boom path includes boom result" time="0.003">
     </testcase>
-    <testcase classname="Games mines fallback placement still completes with repeated random values" name="Games mines fallback placement still completes with repeated random values" time="0.002">
+    <testcase classname="Games mines fallback placement still completes with repeated random values" name="Games mines fallback placement still completes with repeated random values" time="0.001">
     </testcase>
-    <testcase classname="Games mines repeated random uses exactly 101 random calls total" name="Games mines repeated random uses exactly 101 random calls total" time="0.003">
+    <testcase classname="Games mines repeated random uses exactly 101 random calls total" name="Games mines repeated random uses exactly 101 random calls total" time="0.002">
     </testcase>
-    <testcase classname="Games mines fallback adds expected mine tiles for tile 2 pick" name="Games mines fallback adds expected mine tiles for tile 2 pick" time="0.001">
+    <testcase classname="Games mines fallback adds expected mine tiles for tile 2 pick" name="Games mines fallback adds expected mine tiles for tile 2 pick" time="0.003">
     </testcase>
-    <testcase classname="Games mines does not add a fourth mine in fallback loop" name="Games mines does not add a fourth mine in fallback loop" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="export-data deep tests" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="11.125" tests="2">
-    <testcase classname="export-data deep tests exportAllDataZip exports all tables and returns custom output path" name="export-data deep tests exportAllDataZip exports all tables and returns custom output path" time="0.046">
-    </testcase>
-    <testcase classname="export-data deep tests exportAllDataZip uses default path when omitted" name="export-data deep tests exportAllDataZip uses default path when omitted" time="0.006">
+    <testcase classname="Games mines does not add a fourth mine in fallback loop" name="Games mines does not add a fourth mine in fallback loop" time="0.003">
     </testcase>
   </testsuite>
-  <testsuite name="audit-log" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="11.225" tests="2">
-    <testcase classname="audit-log writes audit row and closes connection" name="audit-log writes audit row and closes connection" time="0.037">
+  <testsuite name="platform utility modules" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:26" time="11.653" tests="10">
+    <testcase classname="platform utility modules getPlatformAnalytics aggregates db counts correctly" name="platform utility modules getPlatformAnalytics aggregates db counts correctly" time="0.045">
     </testcase>
-    <testcase classname="audit-log stores null details when omitted and still closes connection on failure" name="audit-log stores null details when omitted and still closes connection on failure" time="0.037">
+    <testcase classname="platform utility modules checkFraudulentActivity returns no alerts for low activity" name="platform utility modules checkFraudulentActivity returns no alerts for low activity" time="0.007">
     </testcase>
-  </testsuite>
-  <testsuite name="db" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="11.775" tests="4">
-    <testcase classname="db throws when required env vars are missing" name="db throws when required env vars are missing" time="0.065">
+    <testcase classname="platform utility modules checkFraudulentActivity returns both alerts for high activity" name="platform utility modules checkFraudulentActivity returns both alerts for high activity" time="0.006">
     </testcase>
-    <testcase classname="db uses DISCORD_GAME_DB_* values with default port 3306" name="db uses DISCORD_GAME_DB_* values with default port 3306" time="0.022">
+    <testcase classname="platform utility modules checkFraudulentActivity does not alert at exact threshold values" name="platform utility modules checkFraudulentActivity does not alert at exact threshold values" time="0.004">
     </testcase>
-    <testcase classname="db falls back to DB_* values and parses DB_PORT" name="db falls back to DB_* values and parses DB_PORT" time="0.007">
+    <testcase classname="platform utility modules checkFraudulentActivity handles empty aggregate rows without throwing" name="platform utility modules checkFraudulentActivity handles empty aggregate rows without throwing" time="0.005">
     </testcase>
-    <testcase classname="db DISCORD_GAME_DB values take precedence over DB_* fallback" name="db DISCORD_GAME_DB values take precedence over DB_* fallback" time="0.005">
+    <testcase classname="platform utility modules getChartUrl returns encoded quickchart URL" name="platform utility modules getChartUrl returns encoded quickchart URL" time="0.005">
     </testcase>
-  </testsuite>
-  <testsuite name="rag deep tests" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="11.89" tests="19">
-    <testcase classname="rag deep tests getRagIndex builds stats from default source directories and files" name="rag deep tests getRagIndex builds stats from default source directories and files" time="0.043">
+    <testcase classname="platform utility modules getChartUrl uses default title when omitted" name="platform utility modules getChartUrl uses default title when omitted" time="0.006">
     </testcase>
-    <testcase classname="rag deep tests queryRag returns ranked results, excludes ignored dirs, and clamps topK" name="rag deep tests queryRag returns ranked results, excludes ignored dirs, and clamps topK" time="0.015">
+    <testcase classname="platform utility modules getPersonalizedOffer covers tier branches" name="platform utility modules getPersonalizedOffer covers tier branches" time="0.005">
     </testcase>
-    <testcase classname="rag deep tests queryRag returns empty results for stopword-only query" name="rag deep tests queryRag returns empty results for stopword-only query" time="0.018">
+    <testcase classname="platform utility modules referral helpers return leaderboard and user count" name="platform utility modules referral helpers return leaderboard and user count" time="0.014">
     </testcase>
-    <testcase classname="rag deep tests answerWithContext returns fallback response when nothing matches" name="rag deep tests answerWithContext returns fallback response when nothing matches" time="0.012">
-    </testcase>
-    <testcase classname="rag deep tests index cache is reused without forceRefresh and replaced with forceRefresh" name="rag deep tests index cache is reused without forceRefresh and replaced with forceRefresh" time="0.029">
-    </testcase>
-    <testcase classname="rag deep tests queryRag can build index on cold module cache without pre-index call" name="rag deep tests queryRag can build index on cold module cache without pre-index call" time="0.016">
-    </testcase>
-    <testcase classname="rag deep tests answerWithContext returns formatted summary when matches exist" name="rag deep tests answerWithContext returns formatted summary when matches exist" time="0.035">
-    </testcase>
-    <testcase classname="rag deep tests indexing tolerates unreadable files, non-directory source paths, and ignored nested folders" name="rag deep tests indexing tolerates unreadable files, non-directory source paths, and ignored nested folders" time="0.027">
-    </testcase>
-    <testcase classname="rag deep tests chunking creates multi-part chunks for large files and still returns ranked matches" name="rag deep tests chunking creates multi-part chunks for large files and still returns ranked matches" time="0.019">
-    </testcase>
-    <testcase classname="rag deep tests tokenize returns empty array and buildIndex skips chunks when file content is all special chars" name="rag deep tests tokenize returns empty array and buildIndex skips chunks when file content is all special chars" time="0.019">
-    </testcase>
-    <testcase classname="rag deep tests collectFiles skips files with non-indexable extensions" name="rag deep tests collectFiles skips files with non-indexable extensions" time="0.015">
-    </testcase>
-    <testcase classname="rag deep tests collectFiles tolerates symlinks (non-file non-directory Dirent entries)" name="rag deep tests collectFiles tolerates symlinks (non-file non-directory Dirent entries)" time="0.015">
-    </testcase>
-    <testcase classname="rag deep tests collectFiles ignores default source file entries that are directories not files" name="rag deep tests collectFiles ignores default source file entries that are directories not files" time="0.015">
-    </testcase>
-    <testcase classname="rag deep tests buildIndex handles workspace where all indexed content produces empty chunks" name="rag deep tests buildIndex handles workspace where all indexed content produces empty chunks" time="0.006">
-    </testcase>
-    <testcase classname="rag deep tests collectFiles walks non-ignored nested directories recursively" name="rag deep tests collectFiles walks non-ignored nested directories recursively" time="0.017">
-    </testcase>
-    <testcase classname="rag deep tests chunkText skips empty trimmed windows (line 111 false branch)" name="rag deep tests chunkText skips empty trimmed windows (line 111 false branch)" time="0.015">
-    </testcase>
-    <testcase classname="rag deep tests getRagIndex and queryRag use default rootDir when called without it (lines 238/245)" name="rag deep tests getRagIndex and queryRag use default rootDir when called without it (lines 238/245)" time="0.003">
-    </testcase>
-    <testcase classname="rag deep tests queryRag clamps topK to at least one result slot" name="rag deep tests queryRag clamps topK to at least one result slot" time="0.019">
-    </testcase>
-    <testcase classname="rag deep tests answerWithContext uses default rootDir when omitted" name="rag deep tests answerWithContext uses default rootDir when omitted" time="0.001">
+    <testcase classname="platform utility modules getVirtualBoardData logs only when user and server are provided" name="platform utility modules getVirtualBoardData logs only when user and server are provided" time="0.009">
     </testcase>
   </testsuite>
-  <testsuite name="coin exchange deep tests" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="12.263" tests="25">
-    <testcase classname="coin exchange deep tests parseCoinAmount validates and rounds input" name="coin exchange deep tests parseCoinAmount validates and rounds input" time="0.025">
+  <testsuite name="Security Setup" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:27" time="11.509" tests="1">
+    <testcase classname="Security Setup No token in codebase" name="Security Setup No token in codebase" time="0.033">
     </testcase>
-    <testcase classname="coin exchange deep tests getCoinWallet ensures wallet, maps numeric values, and closes connection" name="coin exchange deep tests getCoinWallet ensures wallet, maps numeric values, and closes connection" time="0.011">
+  </testsuite>
+  <testsuite name="rag deep tests" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:26" time="11.776" tests="19">
+    <testcase classname="rag deep tests getRagIndex builds stats from default source directories and files" name="rag deep tests getRagIndex builds stats from default source directories and files" time="0.203">
     </testcase>
-    <testcase classname="coin exchange deep tests transferCoins rejects self-transfer before opening db connection" name="coin exchange deep tests transferCoins rejects self-transfer before opening db connection" time="0.106">
+    <testcase classname="rag deep tests queryRag returns ranked results, excludes ignored dirs, and clamps topK" name="rag deep tests queryRag returns ranked results, excludes ignored dirs, and clamps topK" time="0.042">
     </testcase>
-    <testcase classname="coin exchange deep tests transferCoins rolls back when sender has insufficient funds" name="coin exchange deep tests transferCoins rolls back when sender has insufficient funds" time="0.006">
+    <testcase classname="rag deep tests queryRag returns empty results for stopword-only query" name="rag deep tests queryRag returns empty results for stopword-only query" time="0.054">
     </testcase>
-    <testcase classname="coin exchange deep tests transferCoins updates balances, writes transactions, commits, and audits" name="coin exchange deep tests transferCoins updates balances, writes transactions, commits, and audits" time="0.008">
+    <testcase classname="rag deep tests answerWithContext returns fallback response when nothing matches" name="rag deep tests answerWithContext returns fallback response when nothing matches" time="0.032">
     </testcase>
-    <testcase classname="coin exchange deep tests listCoinOffers uses status-filtered and unfiltered query branches" name="coin exchange deep tests listCoinOffers uses status-filtered and unfiltered query branches" time="0.005">
+    <testcase classname="rag deep tests index cache is reused without forceRefresh and replaced with forceRefresh" name="rag deep tests index cache is reused without forceRefresh and replaced with forceRefresh" time="0.075">
     </testcase>
-    <testcase classname="coin exchange deep tests listCoinTransactions and listCoinWallets map values and enforce query branches" name="coin exchange deep tests listCoinTransactions and listCoinWallets map values and enforce query branches" time="0.005">
+    <testcase classname="rag deep tests queryRag can build index on cold module cache without pre-index call" name="rag deep tests queryRag can build index on cold module cache without pre-index call" time="0.1">
     </testcase>
-    <testcase classname="coin exchange deep tests getCoinExchangeOverview maps aggregate totals" name="coin exchange deep tests getCoinExchangeOverview maps aggregate totals" time="0.003">
+    <testcase classname="rag deep tests answerWithContext returns formatted summary when matches exist" name="rag deep tests answerWithContext returns formatted summary when matches exist" time="0.073">
     </testcase>
-    <testcase classname="coin exchange deep tests grantCoins updates wallet, writes transaction, and audits" name="coin exchange deep tests grantCoins updates wallet, writes transaction, and audits" time="0.005">
+    <testcase classname="rag deep tests indexing tolerates unreadable files, non-directory source paths, and ignored nested folders" name="rag deep tests indexing tolerates unreadable files, non-directory source paths, and ignored nested folders" time="0.021">
     </testcase>
-    <testcase classname="coin exchange deep tests grantCoins rolls back and rethrows when update fails" name="coin exchange deep tests grantCoins rolls back and rethrows when update fails" time="0.004">
+    <testcase classname="rag deep tests chunking creates multi-part chunks for large files and still returns ranked matches" name="rag deep tests chunking creates multi-part chunks for large files and still returns ranked matches" time="0.024">
+    </testcase>
+    <testcase classname="rag deep tests tokenize returns empty array and buildIndex skips chunks when file content is all special chars" name="rag deep tests tokenize returns empty array and buildIndex skips chunks when file content is all special chars" time="0.032">
+    </testcase>
+    <testcase classname="rag deep tests collectFiles skips files with non-indexable extensions" name="rag deep tests collectFiles skips files with non-indexable extensions" time="0.026">
+    </testcase>
+    <testcase classname="rag deep tests collectFiles tolerates symlinks (non-file non-directory Dirent entries)" name="rag deep tests collectFiles tolerates symlinks (non-file non-directory Dirent entries)" time="0.02">
+    </testcase>
+    <testcase classname="rag deep tests collectFiles ignores default source file entries that are directories not files" name="rag deep tests collectFiles ignores default source file entries that are directories not files" time="0.025">
+    </testcase>
+    <testcase classname="rag deep tests buildIndex handles workspace where all indexed content produces empty chunks" name="rag deep tests buildIndex handles workspace where all indexed content produces empty chunks" time="0.016">
+    </testcase>
+    <testcase classname="rag deep tests collectFiles walks non-ignored nested directories recursively" name="rag deep tests collectFiles walks non-ignored nested directories recursively" time="0.016">
+    </testcase>
+    <testcase classname="rag deep tests chunkText skips empty trimmed windows (line 111 false branch)" name="rag deep tests chunkText skips empty trimmed windows (line 111 false branch)" time="0.021">
+    </testcase>
+    <testcase classname="rag deep tests getRagIndex and queryRag use default rootDir when called without it (lines 238/245)" name="rag deep tests getRagIndex and queryRag use default rootDir when called without it (lines 238/245)" time="0.002">
+    </testcase>
+    <testcase classname="rag deep tests queryRag clamps topK to at least one result slot" name="rag deep tests queryRag clamps topK to at least one result slot" time="0.022">
+    </testcase>
+    <testcase classname="rag deep tests answerWithContext uses default rootDir when omitted" name="rag deep tests answerWithContext uses default rootDir when omitted" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="audit-log" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:27" time="11.637" tests="2">
+    <testcase classname="audit-log writes audit row and closes connection" name="audit-log writes audit row and closes connection" time="0.039">
+    </testcase>
+    <testcase classname="audit-log stores null details when omitted and still closes connection on failure" name="audit-log stores null details when omitted and still closes connection on failure" time="0.049">
+    </testcase>
+  </testsuite>
+  <testsuite name="coin exchange deep tests" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:27" time="11.949" tests="25">
+    <testcase classname="coin exchange deep tests parseCoinAmount validates and rounds input" name="coin exchange deep tests parseCoinAmount validates and rounds input" time="0.029">
+    </testcase>
+    <testcase classname="coin exchange deep tests getCoinWallet ensures wallet, maps numeric values, and closes connection" name="coin exchange deep tests getCoinWallet ensures wallet, maps numeric values, and closes connection" time="0.018">
+    </testcase>
+    <testcase classname="coin exchange deep tests transferCoins rejects self-transfer before opening db connection" name="coin exchange deep tests transferCoins rejects self-transfer before opening db connection" time="0.156">
+    </testcase>
+    <testcase classname="coin exchange deep tests transferCoins rolls back when sender has insufficient funds" name="coin exchange deep tests transferCoins rolls back when sender has insufficient funds" time="0.009">
+    </testcase>
+    <testcase classname="coin exchange deep tests transferCoins updates balances, writes transactions, commits, and audits" name="coin exchange deep tests transferCoins updates balances, writes transactions, commits, and audits" time="0.009">
+    </testcase>
+    <testcase classname="coin exchange deep tests listCoinOffers uses status-filtered and unfiltered query branches" name="coin exchange deep tests listCoinOffers uses status-filtered and unfiltered query branches" time="0.006">
+    </testcase>
+    <testcase classname="coin exchange deep tests listCoinTransactions and listCoinWallets map values and enforce query branches" name="coin exchange deep tests listCoinTransactions and listCoinWallets map values and enforce query branches" time="0.007">
+    </testcase>
+    <testcase classname="coin exchange deep tests getCoinExchangeOverview maps aggregate totals" name="coin exchange deep tests getCoinExchangeOverview maps aggregate totals" time="0.006">
+    </testcase>
+    <testcase classname="coin exchange deep tests grantCoins updates wallet, writes transaction, and audits" name="coin exchange deep tests grantCoins updates wallet, writes transaction, and audits" time="0.007">
+    </testcase>
+    <testcase classname="coin exchange deep tests grantCoins rolls back and rethrows when update fails" name="coin exchange deep tests grantCoins rolls back and rethrows when update fails" time="0.005">
     </testcase>
     <testcase classname="coin exchange deep tests grantCoins stores null details when optional details are omitted" name="coin exchange deep tests grantCoins stores null details when optional details are omitted" time="0.005">
     </testcase>
-    <testcase classname="coin exchange deep tests createExchangeOffer validates sender and recipient are different" name="coin exchange deep tests createExchangeOffer validates sender and recipient are different" time="0.012">
+    <testcase classname="coin exchange deep tests createExchangeOffer validates sender and recipient are different" name="coin exchange deep tests createExchangeOffer validates sender and recipient are different" time="0.005">
     </testcase>
     <testcase classname="coin exchange deep tests createExchangeOffer locks funds, creates offer, and audits" name="coin exchange deep tests createExchangeOffer locks funds, creates offer, and audits" time="0.004">
     </testcase>
-    <testcase classname="coin exchange deep tests createExchangeOffer uses null note and default transaction details when note is omitted" name="coin exchange deep tests createExchangeOffer uses null note and default transaction details when note is omitted" time="0.004">
+    <testcase classname="coin exchange deep tests createExchangeOffer uses null note and default transaction details when note is omitted" name="coin exchange deep tests createExchangeOffer uses null note and default transaction details when note is omitted" time="0.006">
     </testcase>
-    <testcase classname="coin exchange deep tests acceptExchangeOffer rejects non-open or wrong-recipient offers" name="coin exchange deep tests acceptExchangeOffer rejects non-open or wrong-recipient offers" time="0.004">
+    <testcase classname="coin exchange deep tests acceptExchangeOffer rejects non-open or wrong-recipient offers" name="coin exchange deep tests acceptExchangeOffer rejects non-open or wrong-recipient offers" time="0.007">
     </testcase>
-    <testcase classname="coin exchange deep tests cancelExchangeOffer rejects non-sender cancellation attempts" name="coin exchange deep tests cancelExchangeOffer rejects non-sender cancellation attempts" time="0.004">
+    <testcase classname="coin exchange deep tests cancelExchangeOffer rejects non-sender cancellation attempts" name="coin exchange deep tests cancelExchangeOffer rejects non-sender cancellation attempts" time="0.005">
     </testcase>
-    <testcase classname="coin exchange deep tests listUserOffers and listUserTransactions map rows" name="coin exchange deep tests listUserOffers and listUserTransactions map rows" time="0.003">
+    <testcase classname="coin exchange deep tests listUserOffers and listUserTransactions map rows" name="coin exchange deep tests listUserOffers and listUserTransactions map rows" time="0.006">
     </testcase>
-    <testcase classname="coin exchange deep tests createExchangeOffer rolls back when available balance is insufficient" name="coin exchange deep tests createExchangeOffer rolls back when available balance is insufficient" time="0.002">
+    <testcase classname="coin exchange deep tests createExchangeOffer rolls back when available balance is insufficient" name="coin exchange deep tests createExchangeOffer rolls back when available balance is insufficient" time="0.005">
     </testcase>
     <testcase classname="coin exchange deep tests acceptExchangeOffer rejects when sender locked balance is insufficient" name="coin exchange deep tests acceptExchangeOffer rejects when sender locked balance is insufficient" time="0.004">
     </testcase>
     <testcase classname="coin exchange deep tests acceptExchangeOffer completes success path and writes audit log" name="coin exchange deep tests acceptExchangeOffer completes success path and writes audit log" time="0.006">
     </testcase>
-    <testcase classname="coin exchange deep tests acceptExchangeOffer uses fallback note when offer note is null" name="coin exchange deep tests acceptExchangeOffer uses fallback note when offer note is null" time="0.004">
+    <testcase classname="coin exchange deep tests acceptExchangeOffer uses fallback note when offer note is null" name="coin exchange deep tests acceptExchangeOffer uses fallback note when offer note is null" time="0.007">
     </testcase>
-    <testcase classname="coin exchange deep tests cancelExchangeOffer rejects when offer is not open" name="coin exchange deep tests cancelExchangeOffer rejects when offer is not open" time="0.002">
+    <testcase classname="coin exchange deep tests cancelExchangeOffer rejects when offer is not open" name="coin exchange deep tests cancelExchangeOffer rejects when offer is not open" time="0.012">
     </testcase>
-    <testcase classname="coin exchange deep tests cancelExchangeOffer completes success path and writes audit log" name="coin exchange deep tests cancelExchangeOffer completes success path and writes audit log" time="0.003">
+    <testcase classname="coin exchange deep tests cancelExchangeOffer completes success path and writes audit log" name="coin exchange deep tests cancelExchangeOffer completes success path and writes audit log" time="0.004">
     </testcase>
     <testcase classname="coin exchange deep tests listUserTransactions uses default limit when omitted" name="coin exchange deep tests listUserTransactions uses default limit when omitted" time="0.002">
     </testcase>
     <testcase classname="coin exchange deep tests listCoinWallets, listCoinOffers, and listCoinTransactions use defaults when omitted" name="coin exchange deep tests listCoinWallets, listCoinOffers, and listCoinTransactions use defaults when omitted" time="0.003">
     </testcase>
   </testsuite>
-  <testsuite name="Bot Core Commands" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="12.433" tests="1">
-    <testcase classname="Bot Core Commands Client initializes" name="Bot Core Commands Client initializes" time="0.007">
+  <testsuite name="Bot Core Commands" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:27" time="12.464" tests="1">
+    <testcase classname="Bot Core Commands Client initializes" name="Bot Core Commands Client initializes" time="0.012">
     </testcase>
   </testsuite>
-  <testsuite name="api helpers and routes" errors="0" failures="0" skipped="0" timestamp="2026-04-08T19:38:25" time="14.145" tests="39">
-    <testcase classname="api helpers and routes getProvidedToken prefers bearer token over x-api-key" name="api helpers and routes getProvidedToken prefers bearer token over x-api-key" time="0.258">
+  <testsuite name="api helpers and routes" errors="0" failures="0" skipped="0" timestamp="2026-04-08T22:22:27" time="14.198" tests="39">
+    <testcase classname="api helpers and routes getProvidedToken prefers bearer token over x-api-key" name="api helpers and routes getProvidedToken prefers bearer token over x-api-key" time="0.339">
     </testcase>
-    <testcase classname="api helpers and routes getProvidedToken falls back to x-api-key and then empty string" name="api helpers and routes getProvidedToken falls back to x-api-key and then empty string" time="0.037">
+    <testcase classname="api helpers and routes getProvidedToken falls back to x-api-key and then empty string" name="api helpers and routes getProvidedToken falls back to x-api-key and then empty string" time="0.049">
     </testcase>
-    <testcase classname="api helpers and routes getLimit clamps and floors values" name="api helpers and routes getLimit clamps and floors values" time="0.045">
+    <testcase classname="api helpers and routes getLimit clamps and floors values" name="api helpers and routes getLimit clamps and floors values" time="0.038">
     </testcase>
     <testcase classname="api helpers and routes authenticateApi returns 401 for invalid token" name="api helpers and routes authenticateApi returns 401 for invalid token" time="0.053">
     </testcase>
-    <testcase classname="api helpers and routes authenticateApi returns 503 when auth token is not configured" name="api helpers and routes authenticateApi returns 503 when auth token is not configured" time="0.036">
+    <testcase classname="api helpers and routes authenticateApi returns 503 when auth token is not configured" name="api helpers and routes authenticateApi returns 503 when auth token is not configured" time="0.048">
     </testcase>
-    <testcase classname="api helpers and routes authenticateApi returns 503 when API_AUTH_TOKEN env is missing" name="api helpers and routes authenticateApi returns 503 when API_AUTH_TOKEN env is missing" time="0.044">
+    <testcase classname="api helpers and routes authenticateApi returns 503 when API_AUTH_TOKEN env is missing" name="api helpers and routes authenticateApi returns 503 when API_AUTH_TOKEN env is missing" time="0.045">
     </testcase>
-    <testcase classname="api helpers and routes auditApiAccess falls back to API_ADMIN_ID when x-admin-user is absent" name="api helpers and routes auditApiAccess falls back to API_ADMIN_ID when x-admin-user is absent" time="0.035">
+    <testcase classname="api helpers and routes auditApiAccess falls back to API_ADMIN_ID when x-admin-user is absent" name="api helpers and routes auditApiAccess falls back to API_ADMIN_ID when x-admin-user is absent" time="0.082">
     </testcase>
-    <testcase classname="api helpers and routes auditApiAccess falls back to dashboard-admin when API_ADMIN_ID env is missing" name="api helpers and routes auditApiAccess falls back to dashboard-admin when API_ADMIN_ID env is missing" time="0.038">
+    <testcase classname="api helpers and routes auditApiAccess falls back to dashboard-admin when API_ADMIN_ID env is missing" name="api helpers and routes auditApiAccess falls back to dashboard-admin when API_ADMIN_ID env is missing" time="0.056">
     </testcase>
-    <testcase classname="api helpers and routes auditApiAccess uses x-admin-user when provided" name="api helpers and routes auditApiAccess uses x-admin-user when provided" time="0.04">
+    <testcase classname="api helpers and routes auditApiAccess uses x-admin-user when provided" name="api helpers and routes auditApiAccess uses x-admin-user when provided" time="0.047">
     </testcase>
-    <testcase classname="api helpers and routes auditApiAccess swallows logging failures" name="api helpers and routes auditApiAccess swallows logging failures" time="0.032">
+    <testcase classname="api helpers and routes auditApiAccess swallows logging failures" name="api helpers and routes auditApiAccess swallows logging failures" time="0.051">
     </testcase>
-    <testcase classname="api helpers and routes leaderboard route returns rows for authorized request" name="api helpers and routes leaderboard route returns rows for authorized request" time="0.101">
+    <testcase classname="api helpers and routes leaderboard route returns rows for authorized request" name="api helpers and routes leaderboard route returns rows for authorized request" time="0.152">
     </testcase>
     <testcase classname="api helpers and routes game-results route rejects invalid game filter" name="api helpers and routes game-results route rejects invalid game filter" time="0.051">
     </testcase>
-    <testcase classname="api helpers and routes game-results route uses filtered query for valid game" name="api helpers and routes game-results route uses filtered query for valid game" time="0.052">
+    <testcase classname="api helpers and routes game-results route uses filtered query for valid game" name="api helpers and routes game-results route uses filtered query for valid game" time="0.046">
     </testcase>
-    <testcase classname="api helpers and routes game-results route uses unfiltered query when game is omitted" name="api helpers and routes game-results route uses unfiltered query when game is omitted" time="0.055">
+    <testcase classname="api helpers and routes game-results route uses unfiltered query when game is omitted" name="api helpers and routes game-results route uses unfiltered query when game is omitted" time="0.044">
     </testcase>
-    <testcase classname="api helpers and routes game-results route returns 500 on db failure" name="api helpers and routes game-results route returns 500 on db failure" time="0.054">
+    <testcase classname="api helpers and routes game-results route returns 500 on db failure" name="api helpers and routes game-results route returns 500 on db failure" time="0.06">
     </testcase>
-    <testcase classname="api helpers and routes affiliates route rejects invalid status filter" name="api helpers and routes affiliates route rejects invalid status filter" time="0.04">
+    <testcase classname="api helpers and routes affiliates route rejects invalid status filter" name="api helpers and routes affiliates route rejects invalid status filter" time="0.039">
     </testcase>
-    <testcase classname="api helpers and routes affiliates route returns filtered rows for valid status" name="api helpers and routes affiliates route returns filtered rows for valid status" time="0.049">
+    <testcase classname="api helpers and routes affiliates route returns filtered rows for valid status" name="api helpers and routes affiliates route returns filtered rows for valid status" time="0.043">
     </testcase>
-    <testcase classname="api helpers and routes affiliates route uses unfiltered query when status is omitted" name="api helpers and routes affiliates route uses unfiltered query when status is omitted" time="0.042">
+    <testcase classname="api helpers and routes affiliates route uses unfiltered query when status is omitted" name="api helpers and routes affiliates route uses unfiltered query when status is omitted" time="0.041">
     </testcase>
-    <testcase classname="api helpers and routes affiliates route returns 500 on db failure" name="api helpers and routes affiliates route returns 500 on db failure" time="0.079">
+    <testcase classname="api helpers and routes affiliates route returns 500 on db failure" name="api helpers and routes affiliates route returns 500 on db failure" time="0.051">
     </testcase>
-    <testcase classname="api helpers and routes codes and audit-log routes return rows with clamped limits" name="api helpers and routes codes and audit-log routes return rows with clamped limits" time="0.074">
+    <testcase classname="api helpers and routes codes and audit-log routes return rows with clamped limits" name="api helpers and routes codes and audit-log routes return rows with clamped limits" time="0.054">
     </testcase>
-    <testcase classname="api helpers and routes codes and audit-log routes return 500 on db failure" name="api helpers and routes codes and audit-log routes return 500 on db failure" time="0.102">
+    <testcase classname="api helpers and routes codes and audit-log routes return 500 on db failure" name="api helpers and routes codes and audit-log routes return 500 on db failure" time="0.107">
     </testcase>
-    <testcase classname="api helpers and routes stats route returns summary payload" name="api helpers and routes stats route returns summary payload" time="0.05">
+    <testcase classname="api helpers and routes stats route returns summary payload" name="api helpers and routes stats route returns summary payload" time="0.058">
     </testcase>
-    <testcase classname="api helpers and routes stats route returns 500 when db query fails" name="api helpers and routes stats route returns 500 when db query fails" time="0.037">
+    <testcase classname="api helpers and routes stats route returns 500 when db query fails" name="api helpers and routes stats route returns 500 when db query fails" time="0.038">
     </testcase>
-    <testcase classname="api helpers and routes overview route returns analytics payload with timestamp" name="api helpers and routes overview route returns analytics payload with timestamp" time="0.036">
+    <testcase classname="api helpers and routes overview route returns analytics payload with timestamp" name="api helpers and routes overview route returns analytics payload with timestamp" time="0.042">
     </testcase>
-    <testcase classname="api helpers and routes overview route returns 500 when overview query fails" name="api helpers and routes overview route returns 500 when overview query fails" time="0.041">
+    <testcase classname="api helpers and routes overview route returns 500 when overview query fails" name="api helpers and routes overview route returns 500 when overview query fails" time="0.049">
     </testcase>
-    <testcase classname="api helpers and routes exchange routes return mocked integration payloads" name="api helpers and routes exchange routes return mocked integration payloads" time="0.048">
+    <testcase classname="api helpers and routes exchange routes return mocked integration payloads" name="api helpers and routes exchange routes return mocked integration payloads" time="0.049">
     </testcase>
-    <testcase classname="api helpers and routes exchange routes return 500 when integrations fail" name="api helpers and routes exchange routes return 500 when integrations fail" time="0.149">
+    <testcase classname="api helpers and routes exchange routes return 500 when integrations fail" name="api helpers and routes exchange routes return 500 when integrations fail" time="0.17">
     </testcase>
     <testcase classname="api helpers and routes coin exchange offers route rejects invalid status" name="api helpers and routes coin exchange offers route rejects invalid status" time="0.035">
     </testcase>
-    <testcase classname="api helpers and routes rag query route rejects missing query body" name="api helpers and routes rag query route rejects missing query body" time="0.06">
+    <testcase classname="api helpers and routes rag query route rejects missing query body" name="api helpers and routes rag query route rejects missing query body" time="0.059">
     </testcase>
-    <testcase classname="api helpers and routes rag routes return success payloads and clamp topK" name="api helpers and routes rag routes return success payloads and clamp topK" time="0.049">
+    <testcase classname="api helpers and routes rag routes return success payloads and clamp topK" name="api helpers and routes rag routes return success payloads and clamp topK" time="0.053">
     </testcase>
-    <testcase classname="api helpers and routes rag routes return 500 when backing services fail" name="api helpers and routes rag routes return 500 when backing services fail" time="0.119">
+    <testcase classname="api helpers and routes rag routes return 500 when backing services fail" name="api helpers and routes rag routes return 500 when backing services fail" time="0.146">
     </testcase>
-    <testcase classname="api helpers and routes rag retrieve route rejects missing query parameter" name="api helpers and routes rag retrieve route rejects missing query parameter" time="0.038">
+    <testcase classname="api helpers and routes rag retrieve route rejects missing query parameter" name="api helpers and routes rag retrieve route rejects missing query parameter" time="0.041">
     </testcase>
-    <testcase classname="api helpers and routes scraper run route returns success payload with sample codes" name="api helpers and routes scraper run route returns success payload with sample codes" time="0.038">
+    <testcase classname="api helpers and routes scraper run route returns success payload with sample codes" name="api helpers and routes scraper run route returns success payload with sample codes" time="0.047">
     </testcase>
-    <testcase classname="api helpers and routes scraper run route returns 500 on scraper failure" name="api helpers and routes scraper run route returns 500 on scraper failure" time="0.044">
+    <testcase classname="api helpers and routes scraper run route returns 500 on scraper failure" name="api helpers and routes scraper run route returns 500 on scraper failure" time="0.041">
     </testcase>
-    <testcase classname="api helpers and routes scraper status route returns totals and recent codes" name="api helpers and routes scraper status route returns totals and recent codes" time="0.04">
+    <testcase classname="api helpers and routes scraper status route returns totals and recent codes" name="api helpers and routes scraper status route returns totals and recent codes" time="0.044">
     </testcase>
-    <testcase classname="api helpers and routes scraper status route returns 500 when db query fails" name="api helpers and routes scraper status route returns 500 when db query fails" time="0.048">
+    <testcase classname="api helpers and routes scraper status route returns 500 when db query fails" name="api helpers and routes scraper status route returns 500 when db query fails" time="0.045">
     </testcase>
-    <testcase classname="api helpers and routes leaderboard route returns 500 on db failure" name="api helpers and routes leaderboard route returns 500 on db failure" time="0.035">
+    <testcase classname="api helpers and routes leaderboard route returns 500 on db failure" name="api helpers and routes leaderboard route returns 500 on db failure" time="0.036">
     </testcase>
-    <testcase classname="api helpers and routes startApiServer listens on provided port" name="api helpers and routes startApiServer listens on provided port" time="0.037">
+    <testcase classname="api helpers and routes startApiServer listens on provided port" name="api helpers and routes startApiServer listens on provided port" time="0.038">
     </testcase>
-    <testcase classname="api helpers and routes startApiServer listens on default port when omitted" name="api helpers and routes startApiServer listens on default port when omitted" time="0.038">
+    <testcase classname="api helpers and routes startApiServer listens on default port when omitted" name="api helpers and routes startApiServer listens on default port when omitted" time="0.044">
     </testcase>
   </testsuite>
 </testsuites>

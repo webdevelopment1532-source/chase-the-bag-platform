@@ -1,5 +1,15 @@
-import { VercelRequest, VercelResponse } from "@vercel/node";
 import DiscordOauth2 from "discord-oauth2";
+import type { IncomingMessage, ServerResponse } from "http";
+type VercelRequest = IncomingMessage & {
+  body?: any;
+  query?: any;
+  cookies?: any;
+};
+type VercelResponse = ServerResponse & {
+  status: (code: number) => VercelResponse;
+  json: (body: any) => void;
+  end: (body?: any) => void;
+};
 
 const oauth = new DiscordOauth2({
   clientId: process.env.DISCORD_CLIENT_ID!,

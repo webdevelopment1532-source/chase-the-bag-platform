@@ -77,7 +77,7 @@ async function tradeRoutes(fastify) {
             userId: buyerId,
             serverId: "",
             action: "trade_accept",
-            details: `offerId=${offerId}, sellerId=${offer.user_id}, btcLocked=${offer.btc_amount}, fee=${fee}, tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
+            details: `Accepted trade. offerId=${offerId}, sellerId=${offer.user_id}, btcLocked=${offer.btc_amount}, fee=${fee}, tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
         });
         return { tradeId };
     });
@@ -95,7 +95,7 @@ async function tradeRoutes(fastify) {
             userId: "",
             serverId: "",
             action: "trade_confirm",
-            details: `tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
+            details: `Confirmed trade. tradeId=${tradeId}, ip=${req.ip}, timestamp=${new Date().toISOString()}`,
         });
         return { success: true };
     });
